@@ -1,0 +1,230 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SIROS engine test vector",
+  "description": "An engine-level transcript: what the wallet engine sends and is asked, what the world answers, and what must come of it. One JSON file per scenario, loaded by the Go and Rust vector runners.",
+  "type": "object",
+  "required": ["id", "description", "provenance", "generator", "script"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9]+)*$",
+      "description": "Dotted lowercase identifier, e.g. vci.preauth.tx_code.001."
+    },
+    "description": {
+      "type": "string"
+    },
+    "provenance": {
+      "type": "string",
+      "enum": ["spec", "oidf", "policy", "go-observed"],
+      "description": "What backs the expected behaviour. spec: a published specification clause. oidf: an OpenID Foundation conformance-suite result. policy: a recorded SIROS decision. go-observed: characterization of the Go engine — temporary scaffolding with an enforced sunset, see the repository README."
+    },
+    "generator": {
+      "type": "object",
+      "required": ["repo", "commit", "date"],
+      "properties": {
+        "repo": { "type": "string" },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "date": { "type": "string", "format": "date" }
+      },
+      "description": "Where the vector was generated from, at which commit. A go-observed vector's provenance is changed only by evidence, never by regeneration."
+    },
+    "review_by": {
+      "type": "string",
+      "format": "date",
+      "description": "The latest date the vector may gate CI. Required for go-observed vectors; the runner fails once it passes. Extending it requires a written reason in the vector."
+    },
+    "review_reason": {
+      "type": "string",
+      "description": "Why an extended review_by is justified."
+    },
+    "spec_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "The clauses that demand this behaviour, e.g. 'OpenID4VCI 1.0 section 6'. A refusal vector without a citation is flagged observed."
+    },
+    "known_divergence": {
+      "type": "string",
+      "description": "A recorded disagreement between the engines, with a link to the issue and the intended behaviour."
+    },
+    "config": {
+      "type": "object",
+      "description": "The engine configuration the scenario runs under, e.g. metadata_type, allow_plaintext."
+    },
+    "setup": {
+      "type": "object",
+      "description": "The world the scenario builds: issuer or verifier endpoints, keys, wallet state, time."
+    },
+    "script": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/step" }
+    },
+    "notes": { "type": "string" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "step": {
+      "oneOf": [
+        { "$ref": "#/$defs/wmp_in" },
+        { "$ref": "#/$defs/http_out" },
+        { "$ref": "#/$defs/host_ask" },
+        { "$ref": "#/$defs/wmp_out" }
+      ]
+    },
+    "wmp_in": {
+      "type": "object",
+      "required": ["wmp_in"],
+      "properties": {
+        "wmp_in": {
+          "type": "object",
+          "required": ["method"],
+          "properties": {
+            "method": { "type": "string", "description": "A WMP method, e.g. wmp.flow.start." },
+            "params": { "description": "The method params as the wallet host sends them." }
+          }
+        }
+      },
+      "additionalProperties": false,
+      "description": "A message from the wallet host into the engine."
+    },
+    "http_out": {
+      "type": "object",
+      "required": ["http_out"],
+      "properties": {
+        "http_out": {
+          "type": "object",
+          "required": ["expect", "reply"],
+          "properties": {
+            "expect": {
+              "type": "object",
+              "required": ["method", "url", "purpose"],
+              "properties": {
+                "method": { "type": "string" },
+                "url": {
+                  "type": "string",
+                  "description": "Exact URL. Patterns allowed with '*': prefix 're:' for a regular expression."
+                },
+                "headers": {
+                  "type": "object",
+                  "description": "Selected headers that must match."
+                },
+                "form": {
+                  "type": "object",
+                  "description": "Form members that must be present with these values."
+                },
+                "json": {
+                  "type": "object",
+                  "description": "JSON members that must be present with these values."
+                },
+                "purpose": {
+                  "type": "string",
+                  "description": "The fetch purpose the engine declared: IssuerMetadata, AsMetadata, Offer, Nonce, Token, Credential, Deferred, Notification, RequestObject, ClientMetadata, DirectPost, Jwks, Logo, Pdp."
+                },
+                "max_response_bytes": {
+                  "type": "integer",
+                  "description": "The response size limit the engine declared."
+                },
+                "redirects": {
+                  "type": "string",
+                  "description": "The redirect policy the engine declared."
+                },
+                "must_refuse": {
+                  "type": "boolean",
+                  "description": "The engine must NOT make this request; the step fails the vector if it does."
+                }
+              }
+            },
+            "reply": {
+              "type": "object",
+              "required": ["status"],
+              "properties": {
+                "status": { "type": "integer" },
+                "content_type": { "type": "string" },
+                "body": {},
+                "delay_ms": { "type": "integer", "description": "The world's answer latency." }
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false,
+      "description": "An outgoing HTTP request the engine makes: asserted in expect, answered by reply."
+    },
+    "host_ask": {
+      "type": "object",
+      "required": ["host_ask"],
+      "properties": {
+        "host_ask": {
+          "type": "object",
+          "required": ["expect"],
+          "properties": {
+            "expect": {
+              "type": "object",
+              "required": ["kind"],
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": ["sign", "match", "consent", "tx_code", "open_authorization"],
+                  "description": "The sub-flow the engine asks the wallet host for."
+                },
+                "inputs": {
+                  "type": "object",
+                  "description": "Selected members of the ask that must match: the to-be-signed input, the claim paths, the transaction data entries."
+                }
+              }
+            },
+            "answer": {
+              "type": "object",
+              "properties": {
+                "value": { "description": "The sub-flow answer: the tx_code text, the consent decision, the selection." },
+                "signatures": {
+                  "type": "array",
+                  "description": "Signatures over the inputs the engine asked for, supplied by the test keys."
+                }
+              }
+            },
+            "no_ask": {
+              "type": "boolean",
+              "description": "The engine must not ask; the step fails the vector if it does."
+            }
+          }
+        }
+      },
+      "additionalProperties": false,
+      "description": "A sub-flow request from the engine to the wallet host: asserted in expect, answered by answer."
+    },
+    "wmp_out": {
+      "type": "object",
+      "required": ["wmp_out"],
+      "properties": {
+        "wmp_out": {
+          "type": "object",
+          "required": ["expect"],
+          "properties": {
+            "expect": {
+              "type": "object",
+              "required": ["method"],
+              "properties": {
+                "method": { "type": "string", "description": "A WMP method, e.g. wmp.flow.complete." },
+                "params": { "description": "Selected members that must match, with '*' wildcards for engine-generated values." }
+              }
+            },
+            "must_refuse": {
+              "type": "boolean",
+              "description": "The engine must answer with the WMP error named in error_code instead."
+            },
+            "error_code": {
+              "type": "integer",
+              "description": "The WMP or JSON-RPC error code the refusal carries."
+            }
+          }
+        }
+      },
+      "additionalProperties": false,
+      "description": "A message from the engine to the wallet host: the flow result, progress or error."
+    }
+  }
+}
