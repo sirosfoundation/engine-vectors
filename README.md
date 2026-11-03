@@ -49,14 +49,18 @@ The go-observed rules that keep a copied bug from becoming a requirement:
    fix Go and regenerate, or record a `known_divergence` with a link to the
    issue and the intended behaviour. It is never silently resolved by
    copying Go.
-2. Every go-observed vector carries `review_by`, at most sixty days after
+2. **No vector asserts a behaviour that is slated for change.** A known
+   bug in either engine is recorded as the `known_divergence` on the vector
+   that asserts the behaviour we *want* — the expected behaviour in a vector
+   is always the intended one, never the incumbent's.
+3. Every go-observed vector carries `review_by`, at most sixty days after
    generation. The runner **fails** once that date passes; extending it
    requires a written `review_reason` in the vector.
-3. Hard sunset: when Phase B's first milestone is reached — the agreed OIDF
+4. Hard sunset: when Phase B's first milestone is reached — the agreed OIDF
    plans green against the Rust core — no go-observed vector may remain as
    a gate. Each has been promoted (backed by spec, oidf or policy), replaced
    or deleted.
-4. Most of the value is in what the engine must *refuse*. A refusal vector
+5. Most of the value is in what the engine must *refuse*. A refusal vector
    cites the clause or policy that demands the refusal; a refusal with no
    citation is flagged `go-observed` even when generated from a passing run.
 
