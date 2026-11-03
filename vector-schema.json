@@ -242,9 +242,11 @@
                     "consent",
                     "tx_code",
                     "open_authorization",
-                    "attestation"
+                    "attestation",
+                    "presentation",
+                    "dpop"
                   ],
-                  "description": "The sub-flow the engine asks the wallet host for. `attestation` is the (WIA, PoP) pair for OAuth-Client-Attestation (d.vci.wia-via-wallet-provider in docs/decisions.md)."
+                  "description": "The sub-flow the engine asks the wallet host for. `attestation` is the (WIA, PoP) pair (d.vci.wia-via-wallet-provider); `presentation` is the VP token construction (the match's selections, the audience, the nonce); `dpop` is a client-held DPoP proof (RFC 9449 \u00a74.2)."
                 },
                 "inputs": {
                   "type": "object",
