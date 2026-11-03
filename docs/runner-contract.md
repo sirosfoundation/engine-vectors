@@ -53,7 +53,11 @@ next matching step may satisfy.
 - JSON members compare by presence and value, not by order or by set
   equality: an object may carry more members than the expectation names,
   unless the expectation carries `"*"` in a member whose absence is then an
-  error.
+  error. A member value of the object `{"$jwe_header": {…}}` matches a
+  JWE compact-serialization string by decoding its first part and matching
+  the protected header — the only window into what an engine encrypted,
+  since the ciphertext cannot be predicted and only the recipient can read
+  the payload.
 - A `*` wildcard matches any single value of the named type; `ses-*`
   matches any string with that prefix. A `re:` URL expectation is a
   regular expression over the whole URL.

@@ -1,0 +1,158 @@
+{
+  "id": "vp.decline.plain-post.001",
+  "description": "The decline is a plain form POST, never encrypted: the host's consent answer is no, and the engine submits error=access_denied with the description and the request's state to the response endpoint \u2014 no JARM, no encryption, whatever the response mode. The flow then completes with declined rather than erroring: a decline is a user decision, not a failure.",
+  "provenance": "spec",
+  "generator": {
+    "repo": "sirosfoundation/siros-wallet-core",
+    "commit": "d0e3ad6d0fb40235ea5e06370400c216e241cec2",
+    "date": "2026-11-04"
+  },
+  "spec_refs": [
+    "OpenID4VP 1.0 section 6.1 (the error response to direct_post)",
+    "d.vp.jarm-refusal-not-sent in docs/decisions.md (the P0.6 correction: no client encrypts a decline)"
+  ],
+  "setup": {
+    "time": 1700000000,
+    "entropy_seed": 42,
+    "pdp": {
+      "trusted": true,
+      "decision": "in the registry"
+    }
+  },
+  "script": [
+    {
+      "wmp_in": {
+        "method": "wmp.flow.start",
+        "params": {
+          "flow_id": "flow-decline-001",
+          "flow_type": "oid4vp",
+          "params": {
+            "client_id": "x509_san_dns:verifier.example",
+            "nonce": "nonce-decline-001",
+            "response_uri": "https://verifier.example/response",
+            "response_mode": "direct_post",
+            "state": "state-decline-001",
+            "dcql_query": {
+              "credentials": [
+                {
+                  "id": "pid-query",
+                  "meta": {
+                    "vct_values": [
+                      "urn:pid"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "match"
+        },
+        "answer": {
+          "value": {
+            "selections": [
+              {
+                "credential_query_id": "pid-query",
+                "credential_id": "cred-pid-decline-001",
+                "disclosed_claims": []
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "consent"
+        },
+        "answer": {
+          "value": {
+            "consented": false
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://verifier.example/response",
+          "purpose": "DirectPost",
+          "form": {
+            "error": "access_denied",
+            "error_description": "User declined",
+            "state": "state-decline-001"
+          }
+        },
+        "reply": {
+          "status": 200,
+          "body": {}
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-decline-001",
+            "step": "request_parsed"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-decline-001",
+            "step": "trust_evaluated"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-decline-001",
+            "step": "transaction_data_validated"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-decline-001",
+            "step": "credential_selected"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.complete",
+          "params": {
+            "flow_id": "flow-decline-001",
+            "result": {
+              "declined": true
+            }
+          }
+        }
+      }
+    }
+  ],
+  "notes": "The plain decline applies to direct_post; the direct_post.jwt counterpart never sends any decline (d.vp.jarm-refusal-not-sent) \u2014 the verifier times out. This vector pins the P0.6-verified correction that the Go engine's own error path could have gotten wrong: the decline is submitted, the refusal is not."
+}
