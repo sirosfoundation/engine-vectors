@@ -1,0 +1,269 @@
+{
+  "id": "vci.nonce.retry.001",
+  "description": "The invalid_nonce retry-once: the credential endpoint answers the first request with invalid_nonce and a fresh c_nonce in the error body; the proofs are re-requested with the fresh nonce and the request retried exactly once, and the second answer delivers the credential. With no nonce endpoint advertised, the fresh nonce comes from the error body \u2014 the legacy c_nonce fallback.",
+  "provenance": "spec",
+  "generator": {
+    "repo": "sirosfoundation/siros-wallet-core",
+    "commit": "ee259e1f70be644162513ba0b8d4293b450f3aa9",
+    "date": "2026-11-04"
+  },
+  "spec_refs": [
+    "OpenID4VCI 1.0 section 7.5 (the proof's nonce is single-use per request)",
+    "d.vci.nonce-retry-once in docs/decisions.md (the endpoint-first rule and the retry-once bound)"
+  ],
+  "setup": {
+    "time": 1700000000,
+    "entropy_seed": 42,
+    "pdp": {
+      "trusted": true,
+      "decision": "in the registry"
+    }
+  },
+  "script": [
+    {
+      "wmp_in": {
+        "method": "wmp.flow.start",
+        "params": {
+          "flow_id": "flow-nonce-retry-001",
+          "flow_type": "oid4vci",
+          "params": {
+            "credential_issuer": "https://issuer.example",
+            "credential_configuration_ids": [
+              "UniversityDegree"
+            ],
+            "grants": {
+              "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
+                "pre-authorized_code": "preauth-nonce-001"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "GET",
+          "url": "https://issuer.example/.well-known/openid-credential-issuer",
+          "purpose": "IssuerMetadata"
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "credential_issuer": "https://issuer.example",
+            "authorization_servers": [
+              "https://as.example"
+            ],
+            "credential_configurations_supported": {
+              "UniversityDegree": {
+                "scope": "openid"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "GET",
+          "url": "https://as.example/.well-known/oauth-authorization-server",
+          "purpose": "AsMetadata"
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "issuer": "https://as.example",
+            "token_endpoint": "https://as.example/token"
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://as.example/token",
+          "purpose": "Token",
+          "form": {
+            "grant_type": "urn:ietf:params:oauth:grant-type:pre-authorized_code",
+            "pre-authorized_code": "preauth-nonce-001"
+          }
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "access_token": "at-nonce-retry-001",
+            "token_type": "Bearer",
+            "c_nonce": "nonce-initial-001"
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "sign"
+        },
+        "answer": {
+          "value": {
+            "signature": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://issuer.example/credential",
+          "purpose": "Credential",
+          "json": {
+            "credential_configuration_id": "UniversityDegree"
+          }
+        },
+        "reply": {
+          "status": 400,
+          "body": {
+            "error": "invalid_nonce",
+            "c_nonce": "nonce-fresh-001"
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "sign"
+        },
+        "answer": {
+          "value": {
+            "signature": [
+              5,
+              6,
+              7,
+              8
+            ]
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://issuer.example/credential",
+          "purpose": "Credential",
+          "json": {
+            "credential_configuration_id": "UniversityDegree"
+          }
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "credential": "credential-jwt-nonce-retry-001"
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://issuer.example/notification",
+          "purpose": "Notification"
+        },
+        "reply": {
+          "status": 200,
+          "body": {}
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-nonce-retry-001",
+            "step": "offer_parsed"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-nonce-retry-001",
+            "step": "metadata_resolved"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-nonce-retry-001",
+            "step": "as_discovered"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-nonce-retry-001",
+            "step": "trust_evaluated"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-nonce-retry-001",
+            "step": "token_received"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-nonce-retry-001",
+            "step": "credential_received"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.complete",
+          "params": {
+            "flow_id": "flow-nonce-retry-001",
+            "result": {
+              "credential": "credential-jwt-nonce-retry-001",
+              "deferred": false
+            }
+          }
+        }
+      }
+    }
+  ],
+  "notes": "The retry-once bound: a second invalid_nonce would be terminal (d.vci.nonce-retry-once). The second sign ask proves the proofs were re-requested \u2014 the fresh nonce reaches the proof's payload, which the vector leaves unasserted (the proof JWT is engine-assembled from the host's signature). The completion carries no refresh relay: the token answer carried no refresh_token."
+}

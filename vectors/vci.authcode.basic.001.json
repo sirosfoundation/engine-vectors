@@ -1,0 +1,359 @@
+{
+  "id": "vci.authcode.basic.001",
+  "description": "The authorization-code grant, both WMP calls: the start assembles the request (PKCE from the Rng port, the RFC 8707 resource indicator, the issuer_state), pushes it to PAR, and hands the authorization URL to the host; the redirect's answer arrives as wmp.flow.action, the CSRF state is checked against the stash, the code exchanges with the stashed verifier, and the issuance tail runs. The state and the verifier are engine-generated: the PAR step binds them with wildcards, and the action's params reference the bindings \u2014 the same values recur without the vector predicting them.",
+  "provenance": "spec",
+  "generator": {
+    "repo": "sirosfoundation/siros-wallet-core",
+    "commit": "ee259e1f70be644162513ba0b8d4293b450f3aa9",
+    "date": "2026-11-04"
+  },
+  "spec_refs": [
+    "OpenID4VCI 1.0 section 5.1 (the authorization code grant)",
+    "RFC 7636 (PKCE: the S256 challenge pair)",
+    "RFC 9126 (PAR: the pushed request, the request_uri redirect)",
+    "RFC 6749 section 10.12 (the CSRF state check)",
+    "d.vci.metadata-endpoints and d.vci.wia-via-wallet-provider in docs/decisions.md"
+  ],
+  "setup": {
+    "time": 1700000000,
+    "entropy_seed": 42,
+    "pdp": {
+      "trusted": true,
+      "decision": "in the registry"
+    }
+  },
+  "script": [
+    {
+      "wmp_in": {
+        "method": "wmp.flow.start",
+        "params": {
+          "flow_id": "flow-authcode-001",
+          "flow_type": "oid4vci",
+          "params": {
+            "credential_issuer": "https://issuer.example",
+            "credential_configuration_ids": [
+              "UniversityDegree"
+            ],
+            "grants": {
+              "authorization_code": {
+                "issuer_state": "issuer-session-1"
+              }
+            },
+            "redirect_uri": "https://wallet.example/cb",
+            "client_id": "client-1"
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "GET",
+          "url": "https://issuer.example/.well-known/openid-credential-issuer",
+          "purpose": "IssuerMetadata"
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "credential_issuer": "https://issuer.example",
+            "authorization_servers": [
+              "https://as.example"
+            ],
+            "credential_configurations_supported": {
+              "UniversityDegree": {
+                "scope": "openid"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "GET",
+          "url": "https://as.example/.well-known/oauth-authorization-server",
+          "purpose": "AsMetadata"
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "issuer": "https://as.example",
+            "authorization_endpoint": "https://as.example/authorize",
+            "token_endpoint": "https://as.example/token",
+            "pushed_authorization_request_endpoint": "https://as.example/par",
+            "require_pushed_authorization_requests": false,
+            "challenge_endpoint": "https://as.example/attestation/challenge"
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://as.example/par",
+          "purpose": "Token",
+          "form": {
+            "response_type": "code",
+            "client_id": "client-1",
+            "redirect_uri": "https://wallet.example/cb",
+            "state": "*",
+            "code_challenge": "*",
+            "code_challenge_method": "S256",
+            "issuer_state": "issuer-session-1",
+            "resource": "https://issuer.example"
+          }
+        },
+        "reply": {
+          "status": 201,
+          "body": {
+            "request_uri": "urn:ietf:params:oauth:request_uri:par-authcode-001"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-authcode-001",
+            "step": "offer_parsed"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-authcode-001",
+            "step": "metadata_resolved"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-authcode-001",
+            "step": "as_discovered"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-authcode-001",
+            "step": "trust_evaluated"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-authcode-001",
+            "step": "authorization_url",
+            "payload": {
+              "authorization_url": "*",
+              "expected_redirect_uri": "https://wallet.example/cb",
+              "state": "*",
+              "code_verifier": "*"
+            }
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "open_authorization",
+          "inputs": {
+            "flow_id": "flow-authcode-001",
+            "url": "*"
+          }
+        },
+        "answer": {
+          "value": {}
+        }
+      }
+    },
+    {
+      "wmp_in": {
+        "method": "wmp.flow.action",
+        "params": {
+          "flow_id": "flow-authcode-001",
+          "action": "authorization_complete",
+          "params": {
+            "code": "auth-code-001",
+            "state": "$.payload.state"
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "GET",
+          "url": "https://issuer.example/.well-known/openid-credential-issuer",
+          "purpose": "IssuerMetadata"
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "credential_issuer": "https://issuer.example",
+            "authorization_servers": [
+              "https://as.example"
+            ],
+            "credential_configurations_supported": {
+              "UniversityDegree": {
+                "scope": "openid"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "GET",
+          "url": "https://as.example/.well-known/oauth-authorization-server",
+          "purpose": "AsMetadata"
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "issuer": "https://as.example",
+            "token_endpoint": "https://as.example/token",
+            "pushed_authorization_request_endpoint": "https://as.example/par",
+            "require_pushed_authorization_requests": false,
+            "challenge_endpoint": "https://as.example/attestation/challenge"
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://as.example/token",
+          "purpose": "Token",
+          "form": {
+            "grant_type": "authorization_code",
+            "code": "auth-code-001",
+            "redirect_uri": "https://wallet.example/cb",
+            "code_verifier": "$.payload.code_verifier",
+            "resource": "https://issuer.example"
+          }
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "access_token": "at-authcode-001",
+            "token_type": "Bearer",
+            "c_nonce": "nonce-authcode-001",
+            "refresh_token": "rt-authcode-001"
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "sign"
+        },
+        "answer": {
+          "value": {
+            "signature": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://issuer.example/credential",
+          "purpose": "Credential",
+          "json": {
+            "credential_configuration_id": "UniversityDegree"
+          }
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "credential": "credential-jwt-authcode-001"
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://issuer.example/notification",
+          "purpose": "Notification"
+        },
+        "reply": {
+          "status": 200,
+          "body": {}
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-authcode-001",
+            "step": "token_received"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-authcode-001",
+            "step": "credential_received"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.complete",
+          "params": {
+            "flow_id": "flow-authcode-001",
+            "result": {
+              "credential": "credential-jwt-authcode-001",
+              "deferred": false,
+              "refresh_token": "rt-authcode-001",
+              "dpop_jwk": "*"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "notes": "The two-call grant: the state and the code_verifier are engine-generated (the Rng port, seeded by setup.entropy_seed) \u2014 the PAR step's wildcards bind them, and the action's params and the token form reference the bindings ($.state, $.code_verifier), so the transcript asserts the same value recurred without pinning the entropy. The resume re-resolves the offer, the metadata and the trust (the stateless resume), so the fetches repeat."
+}

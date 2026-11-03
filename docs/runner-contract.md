@@ -55,6 +55,12 @@ next matching step may satisfy.
 - Engine-generated values a wildcard matched are **bound by name** for
   later steps: a later step's expectation may name the binding to assert
   the same value recurred (a session id, a nonce the engine must reuse).
+  A binding's name is its JSON path within the expectation that captured
+  it (`.state`, `.payload.code_verifier`), and a `wmp_in` step's params
+  may substitute a binding by that reference — `"state": "$.payload.state"`
+  delivers the very value the engine generated, so a two-call transcript
+  (the authorization-code grant's redirect answer) checks the CSRF state
+  without the vector predicting the seeded entropy.
 - Secrets never appear in a vector in the clear; keys live in `setup` and
   answers assert decryptions, not ciphertext bytes.
 
