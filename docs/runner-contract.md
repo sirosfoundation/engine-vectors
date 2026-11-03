@@ -28,6 +28,12 @@ built from `config`, with the world built from `setup`.
   the selected headers, form and JSON members, the **purpose**, and the size
   and redirect limits the engine declared. The world answers with `reply`.
   With `must_refuse: true`, the engine must make no further request at all.
+  The reply's `body` has three forms: a string is raw bytes, a plain JSON
+  value is its serialization, and `{"encrypt_to_offer": true, "plaintext": …}`
+  builds a JWE at run time from the very `credential_response_encryption`
+  JWK the engine's request offered (the declared alg and enc) — an encrypted
+  answer cannot be pre-baked, and this form asserts the engine can decrypt
+  what it asked for.
 - **`host_ask`** — the engine's next sub-flow request must match `expect`:
   the kind and the selected inputs (the to-be-signed bytes, the claim paths,
   the transaction entries). Answer with `answer`. With `no_ask: true`, the
