@@ -1,0 +1,197 @@
+{
+  "id": "vci.preauth.basic.001",
+  "description": "The pre-authorized-code issuance, end to end: the offer, the issuer metadata, the AS metadata, the token exchange, the host-signed proof, the credential request, the notification, and the completion. The engine's DPoP and attestation client auth are best-effort here: the vector scripts no attestation ask, so the flow proceeds without, and the DPoP header on the token request is free (members the expectation does not name).",
+  "provenance": "spec",
+  "generator": {
+    "repo": "sirosfoundation/siros-wallet-core",
+    "commit": "c232570fca13a510f4ab586da40db70da0d42b94",
+    "date": "2026-11-03"
+  },
+  "spec_refs": [
+    "OpenID4VCI 1.0 section 11.2.2 (the issuer metadata resolves the endpoints)",
+    "OpenID4VCI 1.0 section 8 (the pre-authorized code grant)",
+    "d.vci.metadata-endpoints in docs/decisions.md",
+    "d.vci.wia-via-wallet-provider in docs/decisions.md (the unscripted attestation ask is the best-effort refusal)"
+  ],
+  "setup": {
+    "time": 1700000000,
+    "entropy_seed": 42,
+    "pdp": { "trusted": true, "decision": "in the registry" }
+  },
+  "script": [
+    {
+      "wmp_in": {
+        "method": "wmp.flow.start",
+        "params": {
+          "flow_id": "flow-vci-preauth-001",
+          "flow_type": "oid4vci",
+          "params": {
+            "credential_issuer": "https://issuer.example",
+            "credential_configuration_ids": ["UniversityDegree"],
+            "grants": {
+              "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
+                "pre-authorized_code": "preauth-code-1"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "GET",
+          "url": "https://issuer.example/.well-known/openid-credential-issuer",
+          "purpose": "IssuerMetadata"
+        },
+        "reply": {
+          "status": 200,
+          "content_type": "application/json",
+          "body": {
+            "credential_issuer": "https://issuer.example",
+            "authorization_servers": ["https://as.example"],
+            "credential_configurations_supported": {
+              "UniversityDegree": { "scope": "openid" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "GET",
+          "url": "https://as.example/.well-known/oauth-authorization-server",
+          "purpose": "AsMetadata"
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "issuer": "https://as.example",
+            "token_endpoint": "https://as.example/token"
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://as.example/token",
+          "purpose": "Token",
+          "form": {
+            "grant_type": "urn:ietf:params:oauth:grant-type:pre-authorized_code",
+            "pre-authorized_code": "preauth-code-1"
+          }
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "access_token": "at-vci-preauth-001",
+            "token_type": "Bearer",
+            "c_nonce": "nonce-vci-preauth-001"
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": { "kind": "sign" },
+        "answer": { "value": { "signature": [1, 2, 3, 4] } }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://issuer.example/credential",
+          "purpose": "Credential",
+          "json": {
+            "credential_configuration_id": "UniversityDegree"
+          }
+        },
+        "reply": {
+          "status": 200,
+          "body": { "credential": "credential-jwt-vci-preauth-001" }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://issuer.example/notification",
+          "purpose": "Notification"
+        },
+        "reply": { "status": 200, "body": {} }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-vci-preauth-001",
+            "step": "offer_parsed",
+            "payload": {
+              "credential_issuer": "https://issuer.example",
+              "credential_configuration_ids": ["UniversityDegree"]
+            }
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": { "flow_id": "flow-vci-preauth-001", "step": "metadata_resolved" }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": { "flow_id": "flow-vci-preauth-001", "step": "as_discovered" }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": { "flow_id": "flow-vci-preauth-001", "step": "trust_evaluated" }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": { "flow_id": "flow-vci-preauth-001", "step": "token_received" }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": { "flow_id": "flow-vci-preauth-001", "step": "credential_received" }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.complete",
+          "params": {
+            "flow_id": "flow-vci-preauth-001",
+            "result": { "credential": "credential-jwt-vci-preauth-001" }
+          }
+        }
+      }
+    }
+  ],
+  "notes": "The first scenario file: hand-authored against the Rust engine at the recorded commit, schema-validated by both runners before it runs. The generator block records the engine it was written against, as the schema requires."
+}
