@@ -3,7 +3,13 @@
   "title": "SIROS engine test vector",
   "description": "An engine-level transcript: what the wallet engine sends and is asked, what the world answers, and what must come of it. One JSON file per scenario, loaded by the Go and Rust vector runners.",
   "type": "object",
-  "required": ["id", "description", "provenance", "generator", "script"],
+  "required": [
+    "id",
+    "description",
+    "provenance",
+    "generator",
+    "script"
+  ],
   "properties": {
     "id": {
       "type": "string",
@@ -15,19 +21,33 @@
     },
     "provenance": {
       "type": "string",
-      "enum": ["spec", "oidf", "policy", "go-observed"],
-      "description": "What backs the expected behaviour. spec: a published specification clause. oidf: an OpenID Foundation conformance-suite result. policy: a recorded SIROS decision. go-observed: characterization of the Go engine — temporary scaffolding with an enforced sunset, see the repository README."
+      "enum": [
+        "spec",
+        "oidf",
+        "policy",
+        "go-observed"
+      ],
+      "description": "What backs the expected behaviour. spec: a published specification clause. oidf: an OpenID Foundation conformance-suite result. policy: a recorded SIROS decision. go-observed: characterization of the Go engine \u2014 temporary scaffolding with an enforced sunset, see the repository README."
     },
     "generator": {
       "type": "object",
-      "required": ["repo", "commit", "date"],
+      "required": [
+        "repo",
+        "commit",
+        "date"
+      ],
       "properties": {
-        "repo": { "type": "string" },
+        "repo": {
+          "type": "string"
+        },
         "commit": {
           "type": "string",
           "pattern": "^[0-9a-f]{40}$"
         },
-        "date": { "type": "string", "format": "date" }
+        "date": {
+          "type": "string",
+          "format": "date"
+        }
       },
       "description": "Where the vector was generated from, at which commit. A go-observed vector's provenance is changed only by evidence, never by regeneration."
     },
@@ -42,7 +62,9 @@
     },
     "spec_refs": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "The clauses that demand this behaviour, e.g. 'OpenID4VCI 1.0 section 6'. A refusal vector without a citation is flagged observed."
     },
     "known_divergence": {
@@ -60,30 +82,51 @@
     "script": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/step" }
+      "items": {
+        "$ref": "#/$defs/step"
+      }
     },
-    "notes": { "type": "string" }
+    "notes": {
+      "type": "string"
+    }
   },
   "additionalProperties": false,
   "$defs": {
     "step": {
       "oneOf": [
-        { "$ref": "#/$defs/wmp_in" },
-        { "$ref": "#/$defs/http_out" },
-        { "$ref": "#/$defs/host_ask" },
-        { "$ref": "#/$defs/wmp_out" }
+        {
+          "$ref": "#/$defs/wmp_in"
+        },
+        {
+          "$ref": "#/$defs/http_out"
+        },
+        {
+          "$ref": "#/$defs/host_ask"
+        },
+        {
+          "$ref": "#/$defs/wmp_out"
+        }
       ]
     },
     "wmp_in": {
       "type": "object",
-      "required": ["wmp_in"],
+      "required": [
+        "wmp_in"
+      ],
       "properties": {
         "wmp_in": {
           "type": "object",
-          "required": ["method"],
+          "required": [
+            "method"
+          ],
           "properties": {
-            "method": { "type": "string", "description": "A WMP method, e.g. wmp.flow.start." },
-            "params": { "description": "The method params as the wallet host sends them." }
+            "method": {
+              "type": "string",
+              "description": "A WMP method, e.g. wmp.flow.start."
+            },
+            "params": {
+              "description": "The method params as the wallet host sends them."
+            }
           }
         }
       },
@@ -92,17 +135,28 @@
     },
     "http_out": {
       "type": "object",
-      "required": ["http_out"],
+      "required": [
+        "http_out"
+      ],
       "properties": {
         "http_out": {
           "type": "object",
-          "required": ["expect", "reply"],
+          "required": [
+            "expect",
+            "reply"
+          ],
           "properties": {
             "expect": {
               "type": "object",
-              "required": ["method", "url", "purpose"],
+              "required": [
+                "method",
+                "url",
+                "purpose"
+              ],
               "properties": {
-                "method": { "type": "string" },
+                "method": {
+                  "type": "string"
+                },
                 "url": {
                   "type": "string",
                   "description": "Exact URL. Patterns allowed with '*': prefix 're:' for a regular expression."
@@ -139,12 +193,21 @@
             },
             "reply": {
               "type": "object",
-              "required": ["status"],
+              "required": [
+                "status"
+              ],
               "properties": {
-                "status": { "type": "integer" },
-                "content_type": { "type": "string" },
+                "status": {
+                  "type": "integer"
+                },
+                "content_type": {
+                  "type": "string"
+                },
                 "body": {},
-                "delay_ms": { "type": "integer", "description": "The world's answer latency." }
+                "delay_ms": {
+                  "type": "integer",
+                  "description": "The world's answer latency."
+                }
               }
             }
           }
@@ -155,20 +218,33 @@
     },
     "host_ask": {
       "type": "object",
-      "required": ["host_ask"],
+      "required": [
+        "host_ask"
+      ],
       "properties": {
         "host_ask": {
           "type": "object",
-          "required": ["expect"],
+          "required": [
+            "expect"
+          ],
           "properties": {
             "expect": {
               "type": "object",
-              "required": ["kind"],
+              "required": [
+                "kind"
+              ],
               "properties": {
                 "kind": {
                   "type": "string",
-                  "enum": ["sign", "match", "consent", "tx_code", "open_authorization"],
-                  "description": "The sub-flow the engine asks the wallet host for."
+                  "enum": [
+                    "sign",
+                    "match",
+                    "consent",
+                    "tx_code",
+                    "open_authorization",
+                    "attestation"
+                  ],
+                  "description": "The sub-flow the engine asks the wallet host for. `attestation` is the (WIA, PoP) pair for OAuth-Client-Attestation (d.vci.wia-via-wallet-provider in docs/decisions.md)."
                 },
                 "inputs": {
                   "type": "object",
@@ -179,7 +255,9 @@
             "answer": {
               "type": "object",
               "properties": {
-                "value": { "description": "The sub-flow answer: the tx_code text, the consent decision, the selection." },
+                "value": {
+                  "description": "The sub-flow answer: the tx_code text, the consent decision, the selection."
+                },
                 "signatures": {
                   "type": "array",
                   "description": "Signatures over the inputs the engine asked for, supplied by the test keys."
@@ -198,18 +276,29 @@
     },
     "wmp_out": {
       "type": "object",
-      "required": ["wmp_out"],
+      "required": [
+        "wmp_out"
+      ],
       "properties": {
         "wmp_out": {
           "type": "object",
-          "required": ["expect"],
+          "required": [
+            "expect"
+          ],
           "properties": {
             "expect": {
               "type": "object",
-              "required": ["method"],
+              "required": [
+                "method"
+              ],
               "properties": {
-                "method": { "type": "string", "description": "A WMP method, e.g. wmp.flow.complete." },
-                "params": { "description": "Selected members that must match, with '*' wildcards for engine-generated values." }
+                "method": {
+                  "type": "string",
+                  "description": "A WMP method, e.g. wmp.flow.complete."
+                },
+                "params": {
+                  "description": "Selected members that must match, with '*' wildcards for engine-generated values."
+                }
               }
             },
             "must_refuse": {
