@@ -214,6 +214,29 @@
       }
     },
     {
+      "host_ask": {
+        "expect": {
+          "kind": "open_authorization",
+          "inputs": {
+            "url": "https://verifier.example/done"
+          }
+        },
+        "answer": {
+          "value": {}
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "step": "redirect_opened"
+          }
+        }
+      }
+    },
+    {
       "wmp_out": {
         "expect": {
           "method": "wmp.flow.complete",
