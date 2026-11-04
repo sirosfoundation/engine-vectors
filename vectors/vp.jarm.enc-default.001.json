@@ -115,7 +115,7 @@
               "$jwe_header": {
                 "alg": "ECDH-ES",
                 "enc": "A128GCM",
-                "cty": "JWT"
+                "cty": "json"
               }
             }
           }
@@ -168,6 +168,29 @@
           "params": {
             "flow_id": "flow-jarm-default-001",
             "step": "credential_selected"
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "open_authorization",
+          "inputs": {
+            "url": "https://verifier.example/done"
+          }
+        },
+        "answer": {
+          "value": {}
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "step": "redirect_opened"
           }
         }
       }
