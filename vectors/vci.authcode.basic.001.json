@@ -298,7 +298,8 @@
         "reply": {
           "status": 200,
           "body": {
-            "credential": "credential-jwt-authcode-001"
+            "credential": "credential-jwt-authcode-001",
+            "notification_id": "notif-authcode-001"
           }
         }
       }
@@ -308,7 +309,11 @@
         "expect": {
           "method": "POST",
           "url": "https://issuer.example/notification",
-          "purpose": "Notification"
+          "purpose": "Notification",
+          "json": {
+            "notification_id": "notif-authcode-001",
+            "event": "credential_accepted"
+          }
         },
         "reply": {
           "status": 200,

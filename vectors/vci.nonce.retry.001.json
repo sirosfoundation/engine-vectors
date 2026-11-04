@@ -131,7 +131,8 @@
           "status": 400,
           "body": {
             "error": "invalid_nonce",
-            "c_nonce": "nonce-fresh-001"
+            "c_nonce": "nonce-fresh-001",
+            "notification_id": "notif-nonce-retry-001"
           }
         }
       }
@@ -166,7 +167,8 @@
         "reply": {
           "status": 200,
           "body": {
-            "credential": "credential-jwt-nonce-retry-001"
+            "credential": "credential-jwt-nonce-retry-001",
+            "notification_id": "notif-nonce-retry-001"
           }
         }
       }
@@ -176,7 +178,11 @@
         "expect": {
           "method": "POST",
           "url": "https://issuer.example/notification",
-          "purpose": "Notification"
+          "purpose": "Notification",
+          "json": {
+            "notification_id": "notif-nonce-retry-001",
+            "event": "credential_accepted"
+          }
         },
         "reply": {
           "status": 200,

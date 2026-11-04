@@ -136,7 +136,6 @@
           "json": {
             "credential_configuration_id": "EncryptedDegree",
             "credential_response_encryption": {
-              "alg": "ECDH-ES",
               "enc": "A256GCM",
               "jwk": {
                 "kty": "EC",
@@ -153,7 +152,8 @@
           "body": {
             "encrypt_to_offer": true,
             "plaintext": {
-              "credential": "credential-jwt-encrypted-001"
+              "credential": "credential-jwt-encrypted-001",
+              "notification_id": "notif-encryption-encrypted-200-001"
             }
           }
         }
@@ -164,7 +164,11 @@
         "expect": {
           "method": "POST",
           "url": "https://issuer.example/notification",
-          "purpose": "Notification"
+          "purpose": "Notification",
+          "json": {
+            "notification_id": "notif-encryption-encrypted-200-001",
+            "event": "credential_accepted"
+          }
         },
         "reply": {
           "status": 200,

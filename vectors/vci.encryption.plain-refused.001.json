@@ -137,7 +137,6 @@
           "json": {
             "credential_configuration_id": "EncryptedDegree",
             "credential_response_encryption": {
-              "alg": "ECDH-ES",
               "enc": "A256GCM",
               "jwk": {
                 "kty": "EC",

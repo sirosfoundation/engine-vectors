@@ -16,7 +16,10 @@
   "setup": {
     "time": 1700000000,
     "entropy_seed": 42,
-    "pdp": { "trusted": true, "decision": "in the registry" }
+    "pdp": {
+      "trusted": true,
+      "decision": "in the registry"
+    }
   },
   "script": [
     {
@@ -27,7 +30,9 @@
           "flow_type": "oid4vci",
           "params": {
             "credential_issuer": "https://issuer.example",
-            "credential_configuration_ids": ["UniversityDegree"],
+            "credential_configuration_ids": [
+              "UniversityDegree"
+            ],
             "grants": {
               "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
                 "pre-authorized_code": "preauth-code-1"
@@ -49,9 +54,13 @@
           "content_type": "application/json",
           "body": {
             "credential_issuer": "https://issuer.example",
-            "authorization_servers": ["https://as.example"],
+            "authorization_servers": [
+              "https://as.example"
+            ],
             "credential_configurations_supported": {
-              "UniversityDegree": { "scope": "openid" }
+              "UniversityDegree": {
+                "scope": "openid"
+              }
             }
           }
         }
@@ -96,8 +105,19 @@
     },
     {
       "host_ask": {
-        "expect": { "kind": "sign" },
-        "answer": { "value": { "signature": [1, 2, 3, 4] } }
+        "expect": {
+          "kind": "sign"
+        },
+        "answer": {
+          "value": {
+            "signature": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        }
       }
     },
     {
@@ -112,7 +132,10 @@
         },
         "reply": {
           "status": 200,
-          "body": { "credential": "credential-jwt-vci-preauth-001" }
+          "body": {
+            "credential": "credential-jwt-vci-preauth-001",
+            "notification_id": "notif-preauth-basic-001"
+          }
         }
       }
     },
@@ -121,9 +144,16 @@
         "expect": {
           "method": "POST",
           "url": "https://issuer.example/notification",
-          "purpose": "Notification"
+          "purpose": "Notification",
+          "json": {
+            "notification_id": "notif-preauth-basic-001",
+            "event": "credential_accepted"
+          }
         },
-        "reply": { "status": 200, "body": {} }
+        "reply": {
+          "status": 200,
+          "body": {}
+        }
       }
     },
     {
@@ -135,7 +165,9 @@
             "step": "offer_parsed",
             "payload": {
               "credential_issuer": "https://issuer.example",
-              "credential_configuration_ids": ["UniversityDegree"]
+              "credential_configuration_ids": [
+                "UniversityDegree"
+              ]
             }
           }
         }
@@ -145,7 +177,10 @@
       "wmp_out": {
         "expect": {
           "method": "wmp.flow.progress",
-          "params": { "flow_id": "flow-vci-preauth-001", "step": "metadata_resolved" }
+          "params": {
+            "flow_id": "flow-vci-preauth-001",
+            "step": "metadata_resolved"
+          }
         }
       }
     },
@@ -153,7 +188,10 @@
       "wmp_out": {
         "expect": {
           "method": "wmp.flow.progress",
-          "params": { "flow_id": "flow-vci-preauth-001", "step": "as_discovered" }
+          "params": {
+            "flow_id": "flow-vci-preauth-001",
+            "step": "as_discovered"
+          }
         }
       }
     },
@@ -161,7 +199,10 @@
       "wmp_out": {
         "expect": {
           "method": "wmp.flow.progress",
-          "params": { "flow_id": "flow-vci-preauth-001", "step": "trust_evaluated" }
+          "params": {
+            "flow_id": "flow-vci-preauth-001",
+            "step": "trust_evaluated"
+          }
         }
       }
     },
@@ -169,7 +210,10 @@
       "wmp_out": {
         "expect": {
           "method": "wmp.flow.progress",
-          "params": { "flow_id": "flow-vci-preauth-001", "step": "token_received" }
+          "params": {
+            "flow_id": "flow-vci-preauth-001",
+            "step": "token_received"
+          }
         }
       }
     },
@@ -177,7 +221,10 @@
       "wmp_out": {
         "expect": {
           "method": "wmp.flow.progress",
-          "params": { "flow_id": "flow-vci-preauth-001", "step": "credential_received" }
+          "params": {
+            "flow_id": "flow-vci-preauth-001",
+            "step": "credential_received"
+          }
         }
       }
     },
@@ -187,7 +234,9 @@
           "method": "wmp.flow.complete",
           "params": {
             "flow_id": "flow-vci-preauth-001",
-            "result": { "credential": "credential-jwt-vci-preauth-001" }
+            "result": {
+              "credential": "credential-jwt-vci-preauth-001"
+            }
           }
         }
       }
