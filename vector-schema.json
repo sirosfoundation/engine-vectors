@@ -203,6 +203,10 @@
                 "content_type": {
                   "type": "string"
                 },
+                "headers": {
+                  "type": "object",
+                  "description": "The response headers the world answers with — e.g. the DPoP-Nonce header of a use_dpop_nonce demand (RFC 9449 section 8)."
+                },
                 "body": {},
                 "delay_ms": {
                   "type": "integer",
@@ -238,6 +242,7 @@
                   "type": "string",
                   "enum": [
                     "sign",
+                    "signing_key",
                     "match",
                     "consent",
                     "tx_code",
@@ -246,7 +251,7 @@
                     "presentation",
                     "dpop"
                   ],
-                  "description": "The sub-flow the engine asks the wallet host for. `attestation` is the (WIA, PoP) pair (d.vci.wia-via-wallet-provider); `presentation` is the VP token construction (the match's selections, the audience, the nonce); `dpop` is a client-held DPoP proof (RFC 9449 \u00a74.2)."
+                  "description": "The sub-flow the engine asks the wallet host for. `attestation` is the (WIA, PoP) pair (d.vci.wia-via-wallet-provider); `presentation` is the VP token construction (the match's selections, the audience, the nonce); `dpop` is a client-held DPoP proof (RFC 9449 \u00a74.2); `signing_key` is the public JWK of the named key (the proof header's jwk and its RFC 7638 thumbprint kid)."
                 },
                 "inputs": {
                   "type": "object",

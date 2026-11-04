@@ -1,0 +1,287 @@
+{
+  "id": "vci.oidf.private-key-jwt.001",
+  "description": "The private_key_jwt client authentication on the token endpoint (RFC 7523): when the AS metadata declares the method, the engine builds the client assertion JWT and the host signs it — the assertion's type and value ride the form, the signing key named by the conventional client-auth id.",
+  "provenance": "oidf",
+  "generator": {
+    "repo": "sirosfoundation/siros-wallet-core",
+    "commit": "09ab930b4d8f0565ec75bdcd102f28c427ba1ea1",
+    "date": "2026-11-04"
+  },
+  "spec_refs": [
+    "RFC 7523 section 2.2 (the client_assertion_type and client_assertion parameters)",
+    "RFC 7523 section 3 (the assertion is single-use: one fresh jti per request)",
+    "OpenID4VCI 1.0 section 5.1 (the AS metadata's token_endpoint_auth_methods_supported names the method)"
+  ],
+  "setup": {
+    "time": 1700000000,
+    "entropy_seed": 42,
+    "pdp": {
+      "trusted": true,
+      "decision": "in the registry"
+    }
+  },
+  "script": [
+    {
+      "wmp_in": {
+        "method": "wmp.flow.start",
+        "params": {
+          "flow_id": "flow-oidf-client-auth-001",
+          "flow_type": "oid4vci",
+          "params": {
+            "credential_issuer": "https://issuer.example",
+            "credential_configuration_ids": [
+              "UniversityDegree"
+            ],
+            "client_id": "wallet-oidf-001",
+            "grants": {
+              "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
+                "pre-authorized_code": "preauth-code-oidf-client-auth-001"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "GET",
+          "url": "https://issuer.example/.well-known/openid-credential-issuer",
+          "purpose": "IssuerMetadata"
+        },
+        "reply": {
+          "status": 200,
+          "content_type": "application/json",
+          "body": {
+            "credential_issuer": "https://issuer.example",
+            "authorization_servers": [
+              "https://as.example"
+            ],
+            "credential_configurations_supported": {
+              "UniversityDegree": {
+                "scope": "openid"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "GET",
+          "url": "https://as.example/.well-known/oauth-authorization-server",
+          "purpose": "AsMetadata"
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "issuer": "https://as.example",
+            "token_endpoint": "https://as.example/token",
+            "token_endpoint_auth_methods_supported": [
+              "private_key_jwt"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "sign",
+          "inputs": {
+            "key_id": "client-auth"
+          }
+        },
+        "answer": {
+          "value": {
+            "signature": [
+              9,
+              8,
+              7,
+              6
+            ]
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://as.example/token",
+          "purpose": "Token",
+          "form": {
+            "grant_type": "urn:ietf:params:oauth:grant-type:pre-authorized_code",
+            "pre-authorized_code": "preauth-code-oidf-client-auth-001",
+            "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+            "client_assertion": "*"
+          }
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "access_token": "at-oidf-client-auth-001",
+            "token_type": "Bearer",
+            "c_nonce": "nonce-oidf-client-auth-001"
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "signing_key"
+        },
+        "answer": {
+          "value": {
+            "jwk": {
+              "kty": "EC",
+              "crv": "P-256",
+              "x": "ktT77AqMntawPyU772lBg8nd7cwENrYyOL_KWbYN8Jc",
+              "y": "67lPXEq5gJdimDYD0AacxLfRfIm2-fSNd3HBqyXXvBI"
+            }
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "sign"
+        },
+        "answer": {
+          "value": {
+            "signature": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://issuer.example/credential",
+          "purpose": "Credential",
+          "json": {
+            "credential_configuration_id": "UniversityDegree",
+            "proofs": {
+              "jwt": [
+                "*"
+              ]
+            }
+          }
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "credential": "credential-jwt-oidf-client-auth-001",
+            "notification_id": "notif-oidf-client-auth-001"
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://issuer.example/notification",
+          "purpose": "Notification",
+          "json": {
+            "notification_id": "notif-oidf-client-auth-001",
+            "event": "credential_accepted"
+          }
+        },
+        "reply": {
+          "status": 200,
+          "body": {}
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-oidf-client-auth-001",
+            "step": "offer_parsed"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-oidf-client-auth-001",
+            "step": "metadata_resolved"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-oidf-client-auth-001",
+            "step": "as_discovered"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-oidf-client-auth-001",
+            "step": "trust_evaluated"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-oidf-client-auth-001",
+            "step": "token_received"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-oidf-client-auth-001",
+            "step": "credential_received"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.complete",
+          "params": {
+            "flow_id": "flow-oidf-client-auth-001",
+            "result": {
+              "credential": "credential-jwt-oidf-client-auth-001"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "notes": "Backed by the OIDF conformance suite result: plan oid4vci-1_0-wallet-test-plan, suite 5.3.4, client_auth_type=private_key_jwt, module oid4vci-1_0-wallet-test-credential-issuance PASSED on 2026-11-04 (plan detail: https://localhost.emobix.co.uk:8443/plan-detail.html?log=465soSg8t5Gft). The suite's plan registered the client key under a kid; this vector exercises the no-kid path where the sign ask names the conventional client-auth key id — the suite-validated registered-kid path is the same code with the flow's client_key_kid threaded."
+}

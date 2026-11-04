@@ -1,0 +1,281 @@
+{
+  "id": "vci.oidf.dpop-binding.001",
+  "description": "The DPoP-bound immediate issuance, the wire shape the OIDF certification suite validated: the DPoP proof on the token request, the DPoP scheme with a fresh ath-bound proof on the credential request, the 1.0 proofs object ({\"jwt\": [proof]}), the proof header's public JWK from the signing-key ask, and the sender-constrained notification.",
+  "provenance": "oidf",
+  "generator": {
+    "repo": "sirosfoundation/siros-wallet-core",
+    "commit": "09ab930b4d8f0565ec75bdcd102f28c427ba1ea1",
+    "date": "2026-11-04"
+  },
+  "spec_refs": [
+    "RFC 9449 section 4.3 (the access token is sent with the DPoP scheme and a fresh proof)",
+    "RFC 9449 section 4.2 (the proof's htm, htu, iat, ath and the public JWK in the header)",
+    "OpenID4VCI 1.0 section 7.5 (the proofs parameter: an object keyed by proof type, the array of JWTs)",
+    "OpenID4VCI 1.0 section 7.5.1 (exactly one of jwk, kid or x5c identifies the proof's key)",
+    "RFC 7638 section 3.2 (the kid is the JWK thumbprint)",
+    "OpenID4VCI 1.0 section 11.1 (the notification echoes the credential response's notification_id)"
+  ],
+  "setup": {
+    "time": 1700000000,
+    "entropy_seed": 42,
+    "pdp": {
+      "trusted": true,
+      "decision": "in the registry"
+    }
+  },
+  "script": [
+    {
+      "wmp_in": {
+        "method": "wmp.flow.start",
+        "params": {
+          "flow_id": "flow-oidf-dpop-001",
+          "flow_type": "oid4vci",
+          "params": {
+            "credential_issuer": "https://issuer.example",
+            "credential_configuration_ids": [
+              "UniversityDegree"
+            ],
+            "grants": {
+              "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
+                "pre-authorized_code": "preauth-code-oidf-001"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "GET",
+          "url": "https://issuer.example/.well-known/openid-credential-issuer",
+          "purpose": "IssuerMetadata"
+        },
+        "reply": {
+          "status": 200,
+          "content_type": "application/json",
+          "body": {
+            "credential_issuer": "https://issuer.example",
+            "authorization_servers": [
+              "https://as.example"
+            ],
+            "credential_configurations_supported": {
+              "UniversityDegree": {
+                "scope": "openid"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "GET",
+          "url": "https://as.example/.well-known/oauth-authorization-server",
+          "purpose": "AsMetadata"
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "issuer": "https://as.example",
+            "token_endpoint": "https://as.example/token"
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://as.example/token",
+          "purpose": "Token",
+          "headers": {
+            "DPoP": "*"
+          },
+          "form": {
+            "grant_type": "urn:ietf:params:oauth:grant-type:pre-authorized_code",
+            "pre-authorized_code": "preauth-code-oidf-001"
+          }
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "access_token": "at-oidf-dpop-001",
+            "token_type": "DPoP",
+            "c_nonce": "nonce-oidf-dpop-001"
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "signing_key"
+        },
+        "answer": {
+          "value": {
+            "jwk": {
+              "kty": "EC",
+              "crv": "P-256",
+              "x": "ktT77AqMntawPyU772lBg8nd7cwENrYyOL_KWbYN8Jc",
+              "y": "67lPXEq5gJdimDYD0AacxLfRfIm2-fSNd3HBqyXXvBI"
+            }
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "sign"
+        },
+        "answer": {
+          "value": {
+            "signature": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://issuer.example/credential",
+          "purpose": "Credential",
+          "headers": {
+            "authorization": "DPoP at-oidf-dpop-001",
+            "DPoP": "*"
+          },
+          "json": {
+            "credential_configuration_id": "UniversityDegree",
+            "proofs": {
+              "jwt": [
+                "*"
+              ]
+            }
+          }
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "credential": "credential-jwt-oidf-dpop-001",
+            "notification_id": "notif-oidf-dpop-001"
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://issuer.example/notification",
+          "purpose": "Notification",
+          "headers": {
+            "authorization": "DPoP at-oidf-dpop-001",
+            "DPoP": "*"
+          },
+          "json": {
+            "notification_id": "notif-oidf-dpop-001",
+            "event": "credential_accepted"
+          }
+        },
+        "reply": {
+          "status": 200,
+          "body": {}
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-oidf-dpop-001",
+            "step": "offer_parsed",
+            "payload": {
+              "credential_issuer": "https://issuer.example",
+              "credential_configuration_ids": [
+                "UniversityDegree"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-oidf-dpop-001",
+            "step": "metadata_resolved"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-oidf-dpop-001",
+            "step": "as_discovered"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-oidf-dpop-001",
+            "step": "trust_evaluated"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-oidf-dpop-001",
+            "step": "token_received"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-oidf-dpop-001",
+            "step": "credential_received"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.complete",
+          "params": {
+            "flow_id": "flow-oidf-dpop-001",
+            "result": {
+              "credential": "credential-jwt-oidf-dpop-001"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "notes": "Backed by the OIDF conformance suite result: plan oid4vci-1_0-wallet-test-plan, alias siros-wallet-vci-test, suite 5.3.4, module oid4vci-1_0-wallet-test-credential-issuance PASSED on 2026-11-04 (plan detail: https://localhost.emobix.co.uk:8443/plan-detail.html?log=465soSg8t5Gft). The signing-key ask's JWK is embedded in the proof header with its RFC 7638 thumbprint as the kid — the only key identification (the suite rejects more than one of jwk/kid/x5c)."
+}

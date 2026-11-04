@@ -1,0 +1,302 @@
+{
+  "id": "vci.oidf.dpop-nonce-retry.001",
+  "description": "The resource server's DPoP nonce demand on the credential endpoint (RFC 9449 section 8.1): the 401 use_dpop_nonce answer with a fresh DPoP-Nonce header is retried once with a new proof carrying the fresh nonce — the token response's nonce binds the AS, not the credential endpoint, so the resource server's own demand is answered the same way.",
+  "provenance": "oidf",
+  "generator": {
+    "repo": "sirosfoundation/siros-wallet-core",
+    "commit": "09ab930b4d8f0565ec75bdcd102f28c427ba1ea1",
+    "date": "2026-11-04"
+  },
+  "spec_refs": [
+    "RFC 9449 section 8.1 (the DPoP nonce: the 401 use_dpop_nonce with the DPoP-Nonce header, retried with the fresh nonce in the proof)",
+    "RFC 9449 section 7.1 (the WWW-Authenticate error use_dpop_nonce)",
+    "OpenID4VCI 1.0 section 7.5 (the proofs object the retried request carries again)"
+  ],
+  "setup": {
+    "time": 1700000000,
+    "entropy_seed": 42,
+    "pdp": {
+      "trusted": true,
+      "decision": "in the registry"
+    }
+  },
+  "script": [
+    {
+      "wmp_in": {
+        "method": "wmp.flow.start",
+        "params": {
+          "flow_id": "flow-oidf-nonce-retry-001",
+          "flow_type": "oid4vci",
+          "params": {
+            "credential_issuer": "https://issuer.example",
+            "credential_configuration_ids": [
+              "UniversityDegree"
+            ],
+            "grants": {
+              "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
+                "pre-authorized_code": "preauth-code-oidf-nonce-001"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "GET",
+          "url": "https://issuer.example/.well-known/openid-credential-issuer",
+          "purpose": "IssuerMetadata"
+        },
+        "reply": {
+          "status": 200,
+          "content_type": "application/json",
+          "body": {
+            "credential_issuer": "https://issuer.example",
+            "authorization_servers": [
+              "https://as.example"
+            ],
+            "credential_configurations_supported": {
+              "UniversityDegree": {
+                "scope": "openid"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "GET",
+          "url": "https://as.example/.well-known/oauth-authorization-server",
+          "purpose": "AsMetadata"
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "issuer": "https://as.example",
+            "token_endpoint": "https://as.example/token"
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://as.example/token",
+          "purpose": "Token",
+          "headers": {
+            "DPoP": "*"
+          },
+          "form": {
+            "grant_type": "urn:ietf:params:oauth:grant-type:pre-authorized_code",
+            "pre-authorized_code": "preauth-code-oidf-nonce-001"
+          }
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "access_token": "at-oidf-nonce-001",
+            "token_type": "DPoP",
+            "c_nonce": "nonce-oidf-nonce-001"
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "signing_key"
+        },
+        "answer": {
+          "value": {
+            "jwk": {
+              "kty": "EC",
+              "crv": "P-256",
+              "x": "ktT77AqMntawPyU772lBg8nd7cwENrYyOL_KWbYN8Jc",
+              "y": "67lPXEq5gJdimDYD0AacxLfRfIm2-fSNd3HBqyXXvBI"
+            }
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "sign"
+        },
+        "answer": {
+          "value": {
+            "signature": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://issuer.example/credential",
+          "purpose": "Credential",
+          "headers": {
+            "authorization": "DPoP at-oidf-nonce-001",
+            "DPoP": "*"
+          },
+          "json": {
+            "credential_configuration_id": "UniversityDegree",
+            "proofs": {
+              "jwt": [
+                "*"
+              ]
+            }
+          }
+        },
+        "reply": {
+          "status": 401,
+          "headers": {
+            "DPoP-Nonce": "fresh-resource-nonce-oidf-001"
+          },
+          "body": {
+            "error": "invalid_token"
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://issuer.example/credential",
+          "purpose": "Credential",
+          "headers": {
+            "authorization": "DPoP at-oidf-nonce-001",
+            "DPoP": "*"
+          },
+          "json": {
+            "credential_configuration_id": "UniversityDegree",
+            "proofs": {
+              "jwt": [
+                "*"
+              ]
+            }
+          }
+        },
+        "reply": {
+          "status": 200,
+          "body": {
+            "credential": "credential-jwt-oidf-nonce-001",
+            "notification_id": "notif-oidf-nonce-001"
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://issuer.example/notification",
+          "purpose": "Notification",
+          "headers": {
+            "authorization": "DPoP at-oidf-nonce-001",
+            "DPoP": "*"
+          },
+          "json": {
+            "notification_id": "notif-oidf-nonce-001",
+            "event": "credential_accepted"
+          }
+        },
+        "reply": {
+          "status": 200,
+          "body": {}
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-oidf-nonce-retry-001",
+            "step": "offer_parsed"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-oidf-nonce-retry-001",
+            "step": "metadata_resolved"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-oidf-nonce-retry-001",
+            "step": "as_discovered"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-oidf-nonce-retry-001",
+            "step": "trust_evaluated"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-oidf-nonce-retry-001",
+            "step": "token_received"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-oidf-nonce-retry-001",
+            "step": "credential_received"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.complete",
+          "params": {
+            "flow_id": "flow-oidf-nonce-retry-001",
+            "result": {
+              "credential": "credential-jwt-oidf-nonce-001"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "notes": "Backed by the OIDF conformance suite result: plan oid4vci-1_0-wallet-test-plan, suite 5.3.4, module oid4vci-1_0-wallet-test-credential-issuance PASSED on 2026-11-04 — the suite's credential endpoint demanded the resource server's own nonce (WWW-Authenticate: DPoP error=use_dpop_nonce) and accepted the retried proof. The retried request is the assertable behaviour; the fresh nonce itself rides inside the retried DPoP proof JWT, which the transcript matcher does not decode."
+}
