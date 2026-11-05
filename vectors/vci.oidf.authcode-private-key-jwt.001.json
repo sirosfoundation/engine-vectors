@@ -1,0 +1,393 @@
+{
+ "id": "vci.oidf.authcode-private-key-jwt.001",
+ "description": "The private_key_jwt client authentication on the authorization-code grant (RFC 7523): the AS metadata names the method, so the resume\u2019s code-for-token POST carries the client assertion \u2014 the engine builds it, the host signs it with the wallet\u2019s registered key (named by the client_key_kid the flow start carried and the stash relayed across the reload), and the assertion\u2019s type and value ride the form beside the code, its verifier and the resource.",
+ "provenance": "spec",
+ "generator": {
+  "repo": "sirosfoundation/siros-wallet-core",
+  "commit": "220f4b61aed3cf6c488dba77fe87d5890effcd80",
+  "date": "2026-11-05"
+ },
+ "spec_refs": [
+  "RFC 7523 section 2.2 (the client_assertion_type and client_assertion parameters)",
+  "RFC 7523 section 3 (the assertion is single-use: one fresh jti per request)",
+  "OpenID4VCI 1.0 section 5.1 (the AS metadata\u2019s token_endpoint_auth_methods_supported names the method)",
+  "RFC 9126 (PAR: the pushed request, the request_uri redirect)"
+ ],
+ "setup": {
+  "time": 1700000000,
+  "entropy_seed": 42,
+  "pdp": {
+   "trusted": true,
+   "decision": "in the registry"
+  }
+ },
+ "script": [
+  {
+   "wmp_in": {
+    "method": "wmp.flow.start",
+    "params": {
+     "flow_id": "flow-authcode-001",
+     "flow_type": "oid4vci",
+     "params": {
+      "credential_issuer": "https://issuer.example",
+      "credential_configuration_ids": [
+       "UniversityDegree"
+      ],
+      "grants": {
+       "authorization_code": {
+        "issuer_state": "issuer-session-1"
+       }
+      },
+      "redirect_uri": "https://wallet.example/cb",
+      "client_id": "client-1",
+      "client_key_kid": "client-key-1"
+     }
+    }
+   }
+  },
+  {
+   "http_out": {
+    "expect": {
+     "method": "GET",
+     "url": "https://issuer.example/.well-known/openid-credential-issuer",
+     "purpose": "IssuerMetadata"
+    },
+    "reply": {
+     "status": 200,
+     "body": {
+      "credential_issuer": "https://issuer.example",
+      "authorization_servers": [
+       "https://as.example"
+      ],
+      "credential_configurations_supported": {
+       "UniversityDegree": {
+        "scope": "openid"
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "http_out": {
+    "expect": {
+     "method": "GET",
+     "url": "https://as.example/.well-known/oauth-authorization-server",
+     "purpose": "AsMetadata"
+    },
+    "reply": {
+     "status": 200,
+     "body": {
+      "issuer": "https://as.example",
+      "authorization_endpoint": "https://as.example/authorize",
+      "token_endpoint": "https://as.example/token",
+      "pushed_authorization_request_endpoint": "https://as.example/par",
+      "require_pushed_authorization_requests": false,
+      "challenge_endpoint": "https://as.example/attestation/challenge",
+      "token_endpoint_auth_methods_supported": [
+       "private_key_jwt"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "http_out": {
+    "expect": {
+     "method": "POST",
+     "url": "https://as.example/par",
+     "purpose": "Token",
+     "form": {
+      "response_type": "code",
+      "client_id": "client-1",
+      "redirect_uri": "https://wallet.example/cb",
+      "state": "*",
+      "code_challenge": "*",
+      "code_challenge_method": "S256",
+      "issuer_state": "issuer-session-1",
+      "resource": "https://issuer.example"
+     }
+    },
+    "reply": {
+     "status": 201,
+     "body": {
+      "request_uri": "urn:ietf:params:oauth:request_uri:par-authcode-001"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-authcode-001",
+      "step": "offer_parsed"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-authcode-001",
+      "step": "metadata_resolved"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-authcode-001",
+      "step": "as_discovered"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-authcode-001",
+      "step": "trust_evaluated"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-authcode-001",
+      "step": "authorization_url",
+      "payload": {
+       "authorization_url": "*",
+       "expected_redirect_uri": "https://wallet.example/cb",
+       "state": "*",
+       "code_verifier": "*"
+      }
+     }
+    }
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "open_authorization",
+     "inputs": {
+      "flow_id": "flow-authcode-001",
+      "url": "*"
+     }
+    },
+    "answer": {
+     "value": {}
+    }
+   }
+  },
+  {
+   "wmp_in": {
+    "method": "wmp.flow.action",
+    "params": {
+     "flow_id": "flow-authcode-001",
+     "action": "authorization_complete",
+     "params": {
+      "code": "auth-code-001",
+      "state": "$.payload.state",
+      "client_key_kid": "client-key-1"
+     }
+    }
+   }
+  },
+  {
+   "http_out": {
+    "expect": {
+     "method": "GET",
+     "url": "https://issuer.example/.well-known/openid-credential-issuer",
+     "purpose": "IssuerMetadata"
+    },
+    "reply": {
+     "status": 200,
+     "body": {
+      "credential_issuer": "https://issuer.example",
+      "authorization_servers": [
+       "https://as.example"
+      ],
+      "credential_configurations_supported": {
+       "UniversityDegree": {
+        "scope": "openid"
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "http_out": {
+    "expect": {
+     "method": "GET",
+     "url": "https://as.example/.well-known/oauth-authorization-server",
+     "purpose": "AsMetadata"
+    },
+    "reply": {
+     "status": 200,
+     "body": {
+      "issuer": "https://as.example",
+      "token_endpoint": "https://as.example/token",
+      "pushed_authorization_request_endpoint": "https://as.example/par",
+      "require_pushed_authorization_requests": false,
+      "challenge_endpoint": "https://as.example/attestation/challenge",
+      "token_endpoint_auth_methods_supported": [
+       "private_key_jwt"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "sign",
+     "inputs": {
+      "key_id": "client-key-1"
+     }
+    },
+    "answer": {
+     "value": {
+      "signature": [
+       1,
+       2,
+       3,
+       4
+      ]
+     }
+    }
+   }
+  },
+  {
+   "http_out": {
+    "expect": {
+     "method": "POST",
+     "url": "https://as.example/token",
+     "purpose": "Token",
+     "form": {
+      "grant_type": "authorization_code",
+      "code": "auth-code-001",
+      "redirect_uri": "https://wallet.example/cb",
+      "code_verifier": "$.payload.code_verifier",
+      "resource": "https://issuer.example",
+      "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+      "client_assertion": "*"
+     }
+    },
+    "reply": {
+     "status": 200,
+     "body": {
+      "access_token": "at-authcode-001",
+      "token_type": "Bearer",
+      "c_nonce": "nonce-authcode-001",
+      "refresh_token": "rt-authcode-001"
+     }
+    }
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "sign"
+    },
+    "answer": {
+     "value": {
+      "signature": [
+       1,
+       2,
+       3,
+       4
+      ]
+     }
+    }
+   }
+  },
+  {
+   "http_out": {
+    "expect": {
+     "method": "POST",
+     "url": "https://issuer.example/credential",
+     "purpose": "Credential",
+     "json": {
+      "credential_configuration_id": "UniversityDegree"
+     }
+    },
+    "reply": {
+     "status": 200,
+     "body": {
+      "credential": "credential-jwt-authcode-001",
+      "notification_id": "notif-authcode-001"
+     }
+    }
+   }
+  },
+  {
+   "http_out": {
+    "expect": {
+     "method": "POST",
+     "url": "https://issuer.example/notification",
+     "purpose": "Notification",
+     "json": {
+      "notification_id": "notif-authcode-001",
+      "event": "credential_accepted"
+     }
+    },
+    "reply": {
+     "status": 200,
+     "body": {}
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-authcode-001",
+      "step": "token_received"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-authcode-001",
+      "step": "credential_received"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.complete",
+     "params": {
+      "flow_id": "flow-authcode-001",
+      "result": {
+       "credential": "credential-jwt-authcode-001",
+       "deferred": false,
+       "refresh_token": "rt-authcode-001",
+       "dpop_jwk": "*"
+      }
+     }
+    }
+   }
+  }
+ ],
+ "notes": "The same two-call transcript as vci.authcode.basic.001, with the AS naming private_key_jwt: the assertion\u2019s sign ask precedes the token POST, keyed by the registered kid, and the form gains the assertion members. The pre-authorized grant\u2019s suite-validated assertion (vci.oidf.private-key-jwt.001) is the wire this resume mirrors; the suite has not yet run the authorization-code variant."
+}
