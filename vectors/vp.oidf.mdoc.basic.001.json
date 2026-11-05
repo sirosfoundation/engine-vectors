@@ -1,0 +1,251 @@
+{
+ "id": "vp.oidf.mdoc.basic.001",
+ "description": "The mso_mdoc presentation (OpenID4VP 1.0, B.4): the DCQL query's [namespace, claim name] paths select the mDL's driver attributes, the host's presentation answer is the base64url DeviceResponse (ISO/IEC 18013-5, 8.3.2.1.2.2 \u2014 the selected items as issued, the issuerAuth COSE_Sign1 as issued, the device key's ES256 signature over the session transcript of the request's OpenID4VPHandover, B.2.6.1), and the engine structures the DCQL vp_token object keyed by the credential query id (\u00a78.1) over the direct_post form.",
+ "provenance": "oidf",
+ "generator": {
+  "repo": "sirosfoundation/siros-wallet-core",
+  "commit": "e6413e99f50ba1829ef13c047df95c478efa3456",
+  "date": "2026-11-05"
+ },
+ "spec_refs": [
+  "OpenID4VP 1.0 section B.4 (the mso_mdoc credential format and query)",
+  "ISO/IEC 18013-5 section 8.3.2.1.2.2 (the DeviceResponse)",
+  "OpenID4VP 1.0 section B.2.6.1 (the OpenID4VPHandover session transcript)",
+  "OpenID4VP 1.0 section 8.1 (the DCQL vp_token object)"
+ ],
+ "setup": {
+  "time": 1700000000,
+  "entropy_seed": 42,
+  "pdp": {
+   "trusted": true,
+   "decision": "in the registry"
+  }
+ },
+ "script": [
+  {
+   "wmp_in": {
+    "method": "wmp.flow.start",
+    "params": {
+     "flow_id": "flow-vp-mdoc-001",
+     "flow_type": "oid4vp",
+     "params": {
+      "client_id": "x509_san_dns:verifier.example",
+      "nonce": "nonce-vp-mdoc-001",
+      "response_uri": "https://verifier.example/response",
+      "response_mode": "direct_post",
+      "state": "state-vp-mdoc-001",
+      "dcql_query": {
+       "credentials": [
+        {
+         "id": "mdl-query",
+         "format": "mso_mdoc",
+         "meta": {
+          "doctype_value": "org.iso.18013.5.1.mDL"
+         },
+         "claims": [
+          {
+           "path": [
+            "org.iso.18013.5.1",
+            "given_name"
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    }
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "match",
+     "inputs": {
+      "flow_id": "flow-vp-mdoc-001",
+      "dcql_query": {
+       "credentials": [
+        {
+         "id": "mdl-query",
+         "format": "mso_mdoc",
+         "meta": {
+          "doctype_value": "org.iso.18013.5.1.mDL"
+         },
+         "claims": [
+          {
+           "path": [
+            "org.iso.18013.5.1",
+            "given_name"
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "verifier": {
+       "client_id": "x509_san_dns:verifier.example",
+       "domain": "verifier.example",
+       "trusted": true
+      }
+     }
+    },
+    "answer": {
+     "value": {
+      "selections": [
+       {
+        "credential_query_id": "mdl-query",
+        "credential_id": "mini-mdl",
+        "disclosed_claims": [
+         "[\"org.iso.18013.5.1\", \"given_name\"]"
+        ]
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "consent"
+    },
+    "answer": {
+     "value": {
+      "consented": true
+     }
+    }
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "presentation",
+     "inputs": {
+      "flow_id": "flow-vp-mdoc-001",
+      "audience": "x509_san_dns:verifier.example",
+      "nonce": "nonce-vp-mdoc-001",
+      "response_uri": "https://verifier.example/response",
+      "selections": [
+       {
+        "credential_query_id": "mdl-query",
+        "credential_id": "mini-mdl",
+        "disclosed_claims": [
+         "[\"org.iso.18013.5.1\", \"given_name\"]"
+        ]
+       }
+      ]
+     }
+    },
+    "answer": {
+     "value": {
+      "vp_token": "device-response-mdl-001"
+     }
+    }
+   }
+  },
+  {
+   "http_out": {
+    "expect": {
+     "method": "POST",
+     "url": "https://verifier.example/response",
+     "purpose": "DirectPost",
+     "form": {
+      "vp_token": "{\"mdl-query\":[\"device-response-mdl-001\"]}",
+      "state": "state-vp-mdoc-001"
+     }
+    },
+    "reply": {
+     "status": 200,
+     "body": {
+      "redirect_uri": "https://verifier.example/done"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-mdoc-001",
+      "step": "request_parsed"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-mdoc-001",
+      "step": "trust_evaluated"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-mdoc-001",
+      "step": "transaction_data_validated"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-mdoc-001",
+      "step": "credential_selected"
+     }
+    }
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "open_authorization",
+     "inputs": {
+      "url": "https://verifier.example/done"
+     }
+    },
+    "answer": {
+     "value": {}
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-mdoc-001",
+      "step": "redirect_opened"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.complete",
+     "params": {
+      "flow_id": "flow-vp-mdoc-001",
+      "result": {
+       "presented": true,
+       "credential_ids": [
+        "mini-mdl"
+       ]
+      }
+     }
+    }
+   }
+  }
+ ],
+ "notes": "Suite-validated on 2026-11-05: the OID4VP wallet plan iso_mdl variant (oid4vp-1final-wallet-test-plan, x509_san_dns / direct_post / request_uri_signed / plain_vp) passed against the engine through the mini-wallet (plan OzBNWDaDeiAn7, suite 5.3.4; the evidence is archived under results/mini-wallet-vp-mdoc/2026-11-05 in siros-conformance). The host mdoc presentation is the wasm mini host siros-mdoc DeviceResponse; the vp_token here is the token the scripted host answers with, structured by the engine as the \u00a78.1 object."
+}
