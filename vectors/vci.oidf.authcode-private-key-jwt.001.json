@@ -1,6 +1,6 @@
 {
  "id": "vci.oidf.authcode-private-key-jwt.001",
- "description": "The private_key_jwt client authentication on the authorization-code grant (RFC 7523): the AS metadata names the method, so the resume\u2019s code-for-token POST carries the client assertion \u2014 the engine builds it, the host signs it with the wallet\u2019s registered key (named by the client_key_kid the flow start carried and the stash relayed across the reload), and the assertion\u2019s type and value ride the form beside the code, its verifier and the resource.",
+ "description": "The private_key_jwt client authentication on the authorization-code grant (RFC 7523): the AS metadata names the method, so the code-for-token POST and the PAR push both carry the client assertion \u2014 the engine builds it, the host signs it with the wallet\u2019s registered key (named by the client_key_kid the flow start carried and the stash relayed across the reload). The assertion\u2019s type and value ride the pushed form beside the authorization parameters (RFC 9126 \u00a72.1) and the token form beside the code, its verifier and the resource.",
  "provenance": "spec",
  "generator": {
   "repo": "sirosfoundation/siros-wallet-core",
@@ -10,8 +10,8 @@
  "spec_refs": [
   "RFC 7523 section 2.2 (the client_assertion_type and client_assertion parameters)",
   "RFC 7523 section 3 (the assertion is single-use: one fresh jti per request)",
-  "OpenID4VCI 1.0 section 5.1 (the AS metadata\u2019s token_endpoint_auth_methods_supported names the method)",
-  "RFC 9126 (PAR: the pushed request, the request_uri redirect)"
+  "RFC 9126 section 2.1 (the client authentication rides the pushed parameters)",
+  "OpenID4VCI 1.0 section 5.1 (the AS metadata\u2019s token_endpoint_auth_methods_supported names the method)"
  ],
  "setup": {
   "time": 1700000000,
@@ -92,6 +92,26 @@
    }
   },
   {
+   "host_ask": {
+    "expect": {
+     "kind": "sign",
+     "inputs": {
+      "key_id": "client-key-1"
+     }
+    },
+    "answer": {
+     "value": {
+      "signature": [
+       1,
+       2,
+       3,
+       4
+      ]
+     }
+    }
+   }
+  },
+  {
    "http_out": {
     "expect": {
      "method": "POST",
@@ -105,7 +125,9 @@
       "code_challenge": "*",
       "code_challenge_method": "S256",
       "issuer_state": "issuer-session-1",
-      "resource": "https://issuer.example"
+      "resource": "https://issuer.example",
+      "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+      "client_assertion": "*"
      }
     },
     "reply": {
@@ -389,5 +411,5 @@
    }
   }
  ],
- "notes": "The same two-call transcript as vci.authcode.basic.001, with the AS naming private_key_jwt: the assertion\u2019s sign ask precedes the token POST, keyed by the registered kid, and the form gains the assertion members. The pre-authorized grant\u2019s suite-validated assertion (vci.oidf.private-key-jwt.001) is the wire this resume mirrors; the suite has not yet run the authorization-code variant."
+ "notes": "The same two-call transcript as vci.authcode.basic.001, with the AS naming private_key_jwt: each client-authenticated POST \u2014 the PAR push and the token exchange \u2014 is preceded by its assertion sign ask, keyed by the registered kid, and carries the assertion members on its form. The pre-authorized grant\u2019s suite-validated assertion (vci.oidf.private-key-jwt.001) is the wire this resume mirrors; the suite has not yet run the authorization-code variant."
 }
