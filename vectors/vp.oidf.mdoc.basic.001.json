@@ -29,7 +29,7 @@
      "flow_id": "flow-vp-mdoc-001",
      "flow_type": "oid4vp",
      "params": {
-      "client_id": "x509_san_dns:verifier.example",
+      "client_id": "https://verifier.example",
       "nonce": "nonce-vp-mdoc-001",
       "response_uri": "https://verifier.example/response",
       "response_mode": "direct_post",
@@ -83,7 +83,7 @@
        ]
       },
       "verifier": {
-       "client_id": "x509_san_dns:verifier.example",
+       "client_id": "https://verifier.example",
        "domain": "verifier.example",
        "trusted": true
       }
@@ -122,7 +122,7 @@
      "kind": "presentation",
      "inputs": {
       "flow_id": "flow-vp-mdoc-001",
-      "audience": "x509_san_dns:verifier.example",
+      "audience": "https://verifier.example",
       "nonce": "nonce-vp-mdoc-001",
       "response_uri": "https://verifier.example/response",
       "selections": [
@@ -168,7 +168,29 @@
      "method": "wmp.flow.progress",
      "params": {
       "flow_id": "flow-vp-mdoc-001",
+      "step": "parsing_request"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-mdoc-001",
       "step": "request_parsed"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-mdoc-001",
+      "step": "evaluating_verifier_trust"
      }
     }
    }
@@ -201,7 +223,18 @@
      "method": "wmp.flow.progress",
      "params": {
       "flow_id": "flow-vp-mdoc-001",
-      "step": "credential_selected"
+      "step": "credential_selection"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-mdoc-001",
+      "step": "submitting_response"
      }
     }
    }

@@ -1,258 +1,291 @@
 {
-  "id": "vp.presentation.basic.001",
-  "description": "The presentation flow, end to end: the authorization request by value with a DCQL query, the verifier trust through the PDP, the host match against the query, the consent, the host-constructed VP token, the DCQL \u00a78.1 restructure, and the direct_post submission.",
-  "provenance": "spec",
-  "generator": {
-    "repo": "sirosfoundation/siros-wallet-core",
-    "commit": "1796021df43a575a2ff4a56d7253e66f523b5362",
-    "date": "2026-11-03"
-  },
-  "spec_refs": [
-    "OpenID4VP 1.0 section 8.1 (the vp_token object keyed by credential query id)",
-    "OpenID4VP 1.0 section 5.2 (the client metadata)",
-    "d.vp.jarm-refusal-not-sent in docs/decisions.md (the decline rule this vector does not exercise)",
-    "d.vci.wia-via-wallet-provider in docs/decisions.md (the unscripted attestation ask is the best-effort refusal)"
-  ],
-  "setup": {
-    "time": 1700000000,
-    "entropy_seed": 42,
-    "pdp": {
-      "trusted": true,
-      "decision": "in the registry"
+ "id": "vp.presentation.basic.001",
+ "description": "The presentation flow, end to end: the authorization request by value with a DCQL query, the verifier trust through the PDP, the host match against the query, the consent, the host-constructed VP token, the DCQL \u00a78.1 restructure, and the direct_post submission.",
+ "provenance": "spec",
+ "generator": {
+  "repo": "sirosfoundation/siros-wallet-core",
+  "commit": "1796021df43a575a2ff4a56d7253e66f523b5362",
+  "date": "2026-11-03"
+ },
+ "spec_refs": [
+  "OpenID4VP 1.0 section 8.1 (the vp_token object keyed by credential query id)",
+  "OpenID4VP 1.0 section 5.2 (the client metadata)",
+  "d.vp.jarm-refusal-not-sent in docs/decisions.md (the decline rule this vector does not exercise)",
+  "d.vci.wia-via-wallet-provider in docs/decisions.md (the unscripted attestation ask is the best-effort refusal)"
+ ],
+ "setup": {
+  "time": 1700000000,
+  "entropy_seed": 42,
+  "pdp": {
+   "trusted": true,
+   "decision": "in the registry"
+  }
+ },
+ "script": [
+  {
+   "wmp_in": {
+    "method": "wmp.flow.start",
+    "params": {
+     "flow_id": "flow-vp-presentation-001",
+     "flow_type": "oid4vp",
+     "params": {
+      "client_id": "https://verifier.example",
+      "nonce": "nonce-vp-001",
+      "response_uri": "https://verifier.example/response",
+      "response_mode": "direct_post",
+      "state": "state-vp-001",
+      "dcql_query": {
+       "credentials": [
+        {
+         "id": "pid-query",
+         "meta": {
+          "vct_values": [
+           "urn:pid"
+          ]
+         }
+        },
+        {
+         "id": "degree-query",
+         "meta": {
+          "vct_values": [
+           "urn:degree"
+          ]
+         }
+        }
+       ]
+      }
+     }
     }
+   }
   },
-  "script": [
-    {
-      "wmp_in": {
-        "method": "wmp.flow.start",
-        "params": {
-          "flow_id": "flow-vp-presentation-001",
-          "flow_type": "oid4vp",
-          "params": {
-            "client_id": "x509_san_dns:verifier.example",
-            "nonce": "nonce-vp-001",
-            "response_uri": "https://verifier.example/response",
-            "response_mode": "direct_post",
-            "state": "state-vp-001",
-            "dcql_query": {
-              "credentials": [
-                {
-                  "id": "pid-query",
-                  "meta": {
-                    "vct_values": [
-                      "urn:pid"
-                    ]
-                  }
-                },
-                {
-                  "id": "degree-query",
-                  "meta": {
-                    "vct_values": [
-                      "urn:degree"
-                    ]
-                  }
-                }
-              ]
-            }
-          }
-        }
-      }
-    },
-    {
-      "host_ask": {
-        "expect": {
-          "kind": "match",
-          "inputs": {
-            "flow_id": "flow-vp-presentation-001",
-            "dcql_query": {
-              "credentials": [
-                {
-                  "id": "pid-query",
-                  "meta": {
-                    "vct_values": [
-                      "urn:pid"
-                    ]
-                  }
-                },
-                {
-                  "id": "degree-query",
-                  "meta": {
-                    "vct_values": [
-                      "urn:degree"
-                    ]
-                  }
-                }
-              ]
-            },
-            "verifier": {
-              "client_id": "x509_san_dns:verifier.example",
-              "domain": "verifier.example",
-              "trusted": true
-            }
-          }
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "match",
+     "inputs": {
+      "flow_id": "flow-vp-presentation-001",
+      "dcql_query": {
+       "credentials": [
+        {
+         "id": "pid-query",
+         "meta": {
+          "vct_values": [
+           "urn:pid"
+          ]
+         }
         },
-        "answer": {
-          "value": {
-            "selections": [
-              {
-                "credential_query_id": "pid-query",
-                "credential_id": "cred-pid-001",
-                "disclosed_claims": [
-                  "given_name"
-                ]
-              },
-              {
-                "credential_query_id": "degree-query",
-                "credential_id": "cred-degree-001",
-                "disclosed_claims": []
-              }
-            ]
-          }
+        {
+         "id": "degree-query",
+         "meta": {
+          "vct_values": [
+           "urn:degree"
+          ]
+         }
         }
+       ]
+      },
+      "verifier": {
+       "client_id": "https://verifier.example",
+       "domain": "verifier.example",
+       "trusted": true
       }
+     }
     },
-    {
-      "host_ask": {
-        "expect": {
-          "kind": "consent"
-        },
-        "answer": {
-          "value": {
-            "consented": true
-          }
-        }
-      }
-    },
-    {
-      "host_ask": {
-        "expect": {
-          "kind": "presentation",
-          "inputs": {
-            "flow_id": "flow-vp-presentation-001",
-            "audience": "x509_san_dns:verifier.example",
-            "nonce": "nonce-vp-001",
-            "response_uri": "https://verifier.example/response",
-            "selections": [
-              {
-                "credential_query_id": "pid-query",
-                "credential_id": "cred-pid-001"
-              },
-              {
-                "credential_query_id": "degree-query",
-                "credential_id": "cred-degree-001"
-              }
-            ]
-          }
-        },
-        "answer": {
-          "value": {
-            "vp_token": "token-pid-001\ntoken-degree-001"
-          }
-        }
-      }
-    },
-    {
-      "http_out": {
-        "expect": {
-          "method": "POST",
-          "url": "https://verifier.example/response",
-          "purpose": "DirectPost",
-          "form": {
-            "state": "state-vp-001"
-          }
-        },
-        "reply": {
-          "status": 200,
-          "body": {
-            "redirect_uri": "https://verifier.example/done"
-          }
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "flow_id": "flow-vp-presentation-001",
-            "step": "request_parsed"
-          }
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "flow_id": "flow-vp-presentation-001",
-            "step": "trust_evaluated"
-          }
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "flow_id": "flow-vp-presentation-001",
-            "step": "transaction_data_validated"
-          }
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "flow_id": "flow-vp-presentation-001",
-            "step": "credential_selected"
-          }
-        }
-      }
-    },
-    {
-      "host_ask": {
-        "expect": {
-          "kind": "open_authorization",
-          "inputs": {
-            "url": "https://verifier.example/done"
-          }
-        },
-        "answer": {
-          "value": {}
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "step": "redirect_opened"
-          }
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.complete",
-          "params": {
-            "flow_id": "flow-vp-presentation-001",
-            "result": {
-              "presented": true,
-              "credential_ids": [
-                "cred-pid-001",
-                "cred-degree-001"
-              ]
-            }
-          }
-        }
-      }
+    "answer": {
+     "value": {
+      "selections": [
+       {
+        "credential_query_id": "pid-query",
+        "credential_id": "cred-pid-001",
+        "disclosed_claims": [
+         "given_name"
+        ]
+       },
+       {
+        "credential_query_id": "degree-query",
+        "credential_id": "cred-degree-001",
+        "disclosed_claims": []
+       }
+      ]
+     }
     }
-  ],
-  "notes": "The second scenario file, exercising the presentation seam: the match ask carries the DCQL query and the verifier info, the presentation ask carries the selections, the audience, the nonce and the response endpoint, and the submitted vp_token is the DCQL \u00a78.1 object. The direct_post form's vp_token member is free (the restructured JSON is engine-built); the state is asserted."
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "consent"
+    },
+    "answer": {
+     "value": {
+      "consented": true
+     }
+    }
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "presentation",
+     "inputs": {
+      "flow_id": "flow-vp-presentation-001",
+      "audience": "https://verifier.example",
+      "nonce": "nonce-vp-001",
+      "response_uri": "https://verifier.example/response",
+      "selections": [
+       {
+        "credential_query_id": "pid-query",
+        "credential_id": "cred-pid-001"
+       },
+       {
+        "credential_query_id": "degree-query",
+        "credential_id": "cred-degree-001"
+       }
+      ]
+     }
+    },
+    "answer": {
+     "value": {
+      "vp_token": "token-pid-001\ntoken-degree-001"
+     }
+    }
+   }
+  },
+  {
+   "http_out": {
+    "expect": {
+     "method": "POST",
+     "url": "https://verifier.example/response",
+     "purpose": "DirectPost",
+     "form": {
+      "state": "state-vp-001"
+     }
+    },
+    "reply": {
+     "status": 200,
+     "body": {
+      "redirect_uri": "https://verifier.example/done"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-presentation-001",
+      "step": "parsing_request"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-presentation-001",
+      "step": "request_parsed"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-presentation-001",
+      "step": "evaluating_verifier_trust"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-presentation-001",
+      "step": "trust_evaluated"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-presentation-001",
+      "step": "transaction_data_validated"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-presentation-001",
+      "step": "credential_selection"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-presentation-001",
+      "step": "submitting_response"
+     }
+    }
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "open_authorization",
+     "inputs": {
+      "url": "https://verifier.example/done"
+     }
+    },
+    "answer": {
+     "value": {}
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "step": "redirect_opened"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.complete",
+     "params": {
+      "flow_id": "flow-vp-presentation-001",
+      "result": {
+       "presented": true,
+       "credential_ids": [
+        "cred-pid-001",
+        "cred-degree-001"
+       ]
+      }
+     }
+    }
+   }
+  }
+ ],
+ "notes": "The second scenario file, exercising the presentation seam: the match ask carries the DCQL query and the verifier info, the presentation ask carries the selections, the audience, the nonce and the response endpoint, and the submitted vp_token is the DCQL \u00a78.1 object. The direct_post form's vp_token member is free (the restructured JSON is engine-built); the state is asserted."
 }

@@ -1,162 +1,195 @@
 {
-  "id": "vp.jarm.refusal-not-sent.001",
-  "description": "A direct_post.jwt request the engine cannot answer encrypted sends NOTHING to the verifier: the request carries no client metadata, so there is no verifier key to encrypt to, and the flow refuses without a POST \u2014 the verifier times out. The refusal goes to the wallet host as the flow error; the response endpoint sees no traffic at all.",
-  "provenance": "spec",
-  "generator": {
-    "repo": "sirosfoundation/siros-wallet-core",
-    "commit": "d0e3ad6d0fb40235ea5e06370400c216e241cec2",
-    "date": "2026-11-04"
-  },
-  "spec_refs": [
-    "OpenID4VP 1.0 section 6.2 with JARM (the response to direct_post.jwt is by construction an encrypted JWT)",
-    "d.vp.jarm-refusal-not-sent in docs/decisions.md"
-  ],
-  "setup": {
-    "time": 1700000000,
-    "entropy_seed": 42,
-    "pdp": {
-      "trusted": true,
-      "decision": "in the registry"
+ "id": "vp.jarm.refusal-not-sent.001",
+ "description": "A direct_post.jwt request the engine cannot answer encrypted sends NOTHING to the verifier: the request carries no client metadata, so there is no verifier key to encrypt to, and the flow refuses without a POST \u2014 the verifier times out. The refusal goes to the wallet host as the flow error; the response endpoint sees no traffic at all.",
+ "provenance": "spec",
+ "generator": {
+  "repo": "sirosfoundation/siros-wallet-core",
+  "commit": "d0e3ad6d0fb40235ea5e06370400c216e241cec2",
+  "date": "2026-11-04"
+ },
+ "spec_refs": [
+  "OpenID4VP 1.0 section 6.2 with JARM (the response to direct_post.jwt is by construction an encrypted JWT)",
+  "d.vp.jarm-refusal-not-sent in docs/decisions.md"
+ ],
+ "setup": {
+  "time": 1700000000,
+  "entropy_seed": 42,
+  "pdp": {
+   "trusted": true,
+   "decision": "in the registry"
+  }
+ },
+ "script": [
+  {
+   "wmp_in": {
+    "method": "wmp.flow.start",
+    "params": {
+     "flow_id": "flow-jarm-refusal-001",
+     "flow_type": "oid4vp",
+     "params": {
+      "client_id": "https://verifier.example",
+      "nonce": "nonce-jarm-refusal-001",
+      "response_uri": "https://verifier.example/response",
+      "response_mode": "direct_post.jwt",
+      "state": "state-jarm-refusal-001",
+      "dcql_query": {
+       "credentials": [
+        {
+         "id": "pid-query",
+         "meta": {
+          "vct_values": [
+           "urn:pid"
+          ]
+         }
+        }
+       ]
+      }
+     }
     }
+   }
   },
-  "script": [
-    {
-      "wmp_in": {
-        "method": "wmp.flow.start",
-        "params": {
-          "flow_id": "flow-jarm-refusal-001",
-          "flow_type": "oid4vp",
-          "params": {
-            "client_id": "x509_san_dns:verifier.example",
-            "nonce": "nonce-jarm-refusal-001",
-            "response_uri": "https://verifier.example/response",
-            "response_mode": "direct_post.jwt",
-            "state": "state-jarm-refusal-001",
-            "dcql_query": {
-              "credentials": [
-                {
-                  "id": "pid-query",
-                  "meta": {
-                    "vct_values": [
-                      "urn:pid"
-                    ]
-                  }
-                }
-              ]
-            }
-          }
-        }
-      }
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "match"
     },
-    {
-      "host_ask": {
-        "expect": {
-          "kind": "match"
-        },
-        "answer": {
-          "value": {
-            "selections": [
-              {
-                "credential_query_id": "pid-query",
-                "credential_id": "cred-pid-jarm-refusal-001",
-                "disclosed_claims": []
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "host_ask": {
-        "expect": {
-          "kind": "consent"
-        },
-        "answer": {
-          "value": {
-            "consented": true
-          }
-        }
-      }
-    },
-    {
-      "host_ask": {
-        "expect": {
-          "kind": "presentation"
-        },
-        "answer": {
-          "value": {
-            "vp_token": "token-jarm-refusal-001"
-          }
-        }
-      }
-    },
-    {
-      "http_out": {
-        "expect": {
-          "method": "POST",
-          "url": "https://verifier.example/response",
-          "purpose": "DirectPost",
-          "must_refuse": true
-        },
-        "reply": {
-          "status": 200,
-          "body": {}
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.start"
-        },
-        "must_refuse": true,
-        "error_code": -31006
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "flow_id": "flow-jarm-refusal-001",
-            "step": "request_parsed"
-          }
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "flow_id": "flow-jarm-refusal-001",
-            "step": "trust_evaluated"
-          }
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "flow_id": "flow-jarm-refusal-001",
-            "step": "transaction_data_validated"
-          }
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "flow_id": "flow-jarm-refusal-001",
-            "step": "credential_selected"
-          }
-        }
-      }
+    "answer": {
+     "value": {
+      "selections": [
+       {
+        "credential_query_id": "pid-query",
+        "credential_id": "cred-pid-jarm-refusal-001",
+        "disclosed_claims": []
+       }
+      ]
+     }
     }
-  ],
-  "notes": "The must_refuse on the response endpoint POST is the point of this vector: the engine had the user's consent and a VP token, and still sent nothing \u2014 an unanswered encryption contract leaves the verifier to its timeout, and the flow error (-31006) is the wallet host's to surface. The JWK-less request is the minimal shape; the same rule holds for any key or algorithm the engine cannot use."
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "consent"
+    },
+    "answer": {
+     "value": {
+      "consented": true
+     }
+    }
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "presentation"
+    },
+    "answer": {
+     "value": {
+      "vp_token": "token-jarm-refusal-001"
+     }
+    }
+   }
+  },
+  {
+   "http_out": {
+    "expect": {
+     "method": "POST",
+     "url": "https://verifier.example/response",
+     "purpose": "DirectPost",
+     "must_refuse": true
+    },
+    "reply": {
+     "status": 200,
+     "body": {}
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.start"
+    },
+    "must_refuse": true,
+    "error_code": -31006
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-jarm-refusal-001",
+      "step": "parsing_request"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-jarm-refusal-001",
+      "step": "request_parsed"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-jarm-refusal-001",
+      "step": "evaluating_verifier_trust"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-jarm-refusal-001",
+      "step": "trust_evaluated"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-jarm-refusal-001",
+      "step": "transaction_data_validated"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-jarm-refusal-001",
+      "step": "credential_selection"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-jarm-refusal-001",
+      "step": "submitting_response"
+     }
+    }
+   }
+  }
+ ],
+ "notes": "The must_refuse on the response endpoint POST is the point of this vector: the engine had the user's consent and a VP token, and still sent nothing \u2014 an unanswered encryption contract leaves the verifier to its timeout, and the flow error (-31006) is the wallet host's to surface. The JWK-less request is the minimal shape; the same rule holds for any key or algorithm the engine cannot use."
 }

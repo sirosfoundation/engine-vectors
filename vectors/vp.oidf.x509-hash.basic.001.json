@@ -143,7 +143,29 @@
      "method": "wmp.flow.progress",
      "params": {
       "flow_id": "flow-vp-x509-hash-001",
+      "step": "parsing_request"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-x509-hash-001",
       "step": "request_parsed"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-x509-hash-001",
+      "step": "evaluating_verifier_trust"
      }
     }
    }
@@ -176,7 +198,18 @@
      "method": "wmp.flow.progress",
      "params": {
       "flow_id": "flow-vp-x509-hash-001",
-      "step": "credential_selected"
+      "step": "credential_selection"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-x509-hash-001",
+      "step": "submitting_response"
      }
     }
    }

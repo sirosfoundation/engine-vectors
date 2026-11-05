@@ -1,216 +1,249 @@
 {
-  "id": "vp.jarm.enc-default.001",
-  "description": "The undeclared JARM algorithm resolves from the key, and the undeclared enc defaults to A128GCM: the direct_post.jwt request's client metadata publishes an EC P-256 encryption key but declares neither authorization_encrypted_response_alg nor authorization_encrypted_response_enc. The engine infers ECDH-ES from the EC key (RFC 7518 \u00a74.6) and defaults the content encryption to A128GCM \u2014 the live-interop finding that CBC-HS256, the RFC's first mandatory-to-implement enc, is rejected by real verifiers. The submitted response's JWE header is asserted part-decoded.",
-  "provenance": "policy",
-  "generator": {
-    "repo": "sirosfoundation/siros-wallet-core",
-    "commit": "d0e3ad6d0fb40235ea5e06370400c216e241cec2",
-    "date": "2026-11-04"
-  },
-  "spec_refs": [
-    "RFC 7518 section 4.6 (ECDH-ES, the EC key agreement)",
-    "d.vp.jarm-enc-default in docs/decisions.md (the A128GCM default and the multipaz finding)"
-  ],
-  "setup": {
-    "time": 1700000000,
-    "entropy_seed": 42,
-    "pdp": {
-      "trusted": true,
-      "decision": "in the registry"
+ "id": "vp.jarm.enc-default.001",
+ "description": "The undeclared JARM algorithm resolves from the key, and the undeclared enc defaults to A128GCM: the direct_post.jwt request's client metadata publishes an EC P-256 encryption key but declares neither authorization_encrypted_response_alg nor authorization_encrypted_response_enc. The engine infers ECDH-ES from the EC key (RFC 7518 \u00a74.6) and defaults the content encryption to A128GCM \u2014 the live-interop finding that CBC-HS256, the RFC's first mandatory-to-implement enc, is rejected by real verifiers. The submitted response's JWE header is asserted part-decoded.",
+ "provenance": "policy",
+ "generator": {
+  "repo": "sirosfoundation/siros-wallet-core",
+  "commit": "d0e3ad6d0fb40235ea5e06370400c216e241cec2",
+  "date": "2026-11-04"
+ },
+ "spec_refs": [
+  "RFC 7518 section 4.6 (ECDH-ES, the EC key agreement)",
+  "d.vp.jarm-enc-default in docs/decisions.md (the A128GCM default and the multipaz finding)"
+ ],
+ "setup": {
+  "time": 1700000000,
+  "entropy_seed": 42,
+  "pdp": {
+   "trusted": true,
+   "decision": "in the registry"
+  }
+ },
+ "script": [
+  {
+   "wmp_in": {
+    "method": "wmp.flow.start",
+    "params": {
+     "flow_id": "flow-jarm-default-001",
+     "flow_type": "oid4vp",
+     "params": {
+      "client_id": "https://verifier.example",
+      "nonce": "nonce-jarm-default-001",
+      "response_uri": "https://verifier.example/response",
+      "response_mode": "direct_post.jwt",
+      "state": "state-jarm-default-001",
+      "client_metadata": {
+       "client_name": "Verifier Example",
+       "jwks": {
+        "keys": [
+         {
+          "kty": "EC",
+          "crv": "P-256",
+          "x": "axfR8uEsQkf4vOblY6RA8ncDfYEt6zOg9KE5RdiYwpY",
+          "y": "T-NC4v4af5uO5-tKfA-eFivOM1drMV7Oy7ZAaDe_UfU",
+          "use": "enc"
+         }
+        ]
+       }
+      },
+      "dcql_query": {
+       "credentials": [
+        {
+         "id": "pid-query",
+         "meta": {
+          "vct_values": [
+           "urn:pid"
+          ]
+         }
+        }
+       ]
+      }
+     }
     }
+   }
   },
-  "script": [
-    {
-      "wmp_in": {
-        "method": "wmp.flow.start",
-        "params": {
-          "flow_id": "flow-jarm-default-001",
-          "flow_type": "oid4vp",
-          "params": {
-            "client_id": "x509_san_dns:verifier.example",
-            "nonce": "nonce-jarm-default-001",
-            "response_uri": "https://verifier.example/response",
-            "response_mode": "direct_post.jwt",
-            "state": "state-jarm-default-001",
-            "client_metadata": {
-              "client_name": "Verifier Example",
-              "jwks": {
-                "keys": [
-                  {
-                    "kty": "EC",
-                    "crv": "P-256",
-                    "x": "axfR8uEsQkf4vOblY6RA8ncDfYEt6zOg9KE5RdiYwpY",
-                    "y": "T-NC4v4af5uO5-tKfA-eFivOM1drMV7Oy7ZAaDe_UfU",
-                    "use": "enc"
-                  }
-                ]
-              }
-            },
-            "dcql_query": {
-              "credentials": [
-                {
-                  "id": "pid-query",
-                  "meta": {
-                    "vct_values": [
-                      "urn:pid"
-                    ]
-                  }
-                }
-              ]
-            }
-          }
-        }
-      }
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "match"
     },
-    {
-      "host_ask": {
-        "expect": {
-          "kind": "match"
-        },
-        "answer": {
-          "value": {
-            "selections": [
-              {
-                "credential_query_id": "pid-query",
-                "credential_id": "cred-pid-jarm-default-001",
-                "disclosed_claims": []
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "host_ask": {
-        "expect": {
-          "kind": "consent"
-        },
-        "answer": {
-          "value": {
-            "consented": true
-          }
-        }
-      }
-    },
-    {
-      "host_ask": {
-        "expect": {
-          "kind": "presentation"
-        },
-        "answer": {
-          "value": {
-            "vp_token": "token-jarm-default-001"
-          }
-        }
-      }
-    },
-    {
-      "http_out": {
-        "expect": {
-          "method": "POST",
-          "url": "https://verifier.example/response",
-          "purpose": "DirectPost",
-          "form": {
-            "response": {
-              "$jwe_header": {
-                "alg": "ECDH-ES",
-                "enc": "A128GCM",
-                "cty": "json"
-              }
-            }
-          }
-        },
-        "reply": {
-          "status": 200,
-          "body": {
-            "redirect_uri": "https://verifier.example/done"
-          }
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "flow_id": "flow-jarm-default-001",
-            "step": "request_parsed"
-          }
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "flow_id": "flow-jarm-default-001",
-            "step": "trust_evaluated"
-          }
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "flow_id": "flow-jarm-default-001",
-            "step": "transaction_data_validated"
-          }
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "flow_id": "flow-jarm-default-001",
-            "step": "credential_selected"
-          }
-        }
-      }
-    },
-    {
-      "host_ask": {
-        "expect": {
-          "kind": "open_authorization",
-          "inputs": {
-            "url": "https://verifier.example/done"
-          }
-        },
-        "answer": {
-          "value": {}
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "step": "redirect_opened"
-          }
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.complete",
-          "params": {
-            "flow_id": "flow-jarm-default-001",
-            "result": {
-              "presented": true,
-              "credential_ids": [
-                "cred-pid-jarm-default-001"
-              ]
-            }
-          }
-        }
-      }
+    "answer": {
+     "value": {
+      "selections": [
+       {
+        "credential_query_id": "pid-query",
+        "credential_id": "cred-pid-jarm-default-001",
+        "disclosed_claims": []
+       }
+      ]
+     }
     }
-  ],
-  "notes": "The $jwe_header expectation form decodes the submitted response's first part and asserts the header members \u2014 the only window into what an engine encrypted, since the ciphertext cannot be predicted and only the verifier's key can read the payload. The JWK is a fixed P-256 point, so the vector needs no live key material."
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "consent"
+    },
+    "answer": {
+     "value": {
+      "consented": true
+     }
+    }
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "presentation"
+    },
+    "answer": {
+     "value": {
+      "vp_token": "token-jarm-default-001"
+     }
+    }
+   }
+  },
+  {
+   "http_out": {
+    "expect": {
+     "method": "POST",
+     "url": "https://verifier.example/response",
+     "purpose": "DirectPost",
+     "form": {
+      "response": {
+       "$jwe_header": {
+        "alg": "ECDH-ES",
+        "enc": "A128GCM",
+        "cty": "json"
+       }
+      }
+     }
+    },
+    "reply": {
+     "status": 200,
+     "body": {
+      "redirect_uri": "https://verifier.example/done"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-jarm-default-001",
+      "step": "parsing_request"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-jarm-default-001",
+      "step": "request_parsed"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-jarm-default-001",
+      "step": "evaluating_verifier_trust"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-jarm-default-001",
+      "step": "trust_evaluated"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-jarm-default-001",
+      "step": "transaction_data_validated"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-jarm-default-001",
+      "step": "credential_selection"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-jarm-default-001",
+      "step": "submitting_response"
+     }
+    }
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "open_authorization",
+     "inputs": {
+      "url": "https://verifier.example/done"
+     }
+    },
+    "answer": {
+     "value": {}
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "step": "redirect_opened"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.complete",
+     "params": {
+      "flow_id": "flow-jarm-default-001",
+      "result": {
+       "presented": true,
+       "credential_ids": [
+        "cred-pid-jarm-default-001"
+       ]
+      }
+     }
+    }
+   }
+  }
+ ],
+ "notes": "The $jwe_header expectation form decodes the submitted response's first part and asserts the header members \u2014 the only window into what an engine encrypted, since the ciphertext cannot be predicted and only the verifier's key can read the payload. The JWK is a fixed P-256 point, so the vector needs no live key material."
 }

@@ -144,6 +144,17 @@
      "method": "wmp.flow.progress",
      "params": {
       "flow_id": "flow-authcode-001",
+      "step": "parsing_offer"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-authcode-001",
       "step": "offer_parsed"
      }
     }
@@ -155,7 +166,18 @@
      "method": "wmp.flow.progress",
      "params": {
       "flow_id": "flow-authcode-001",
-      "step": "metadata_resolved"
+      "step": "fetching_metadata"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-authcode-001",
+      "step": "metadata_fetched"
      }
     }
    }
@@ -177,6 +199,17 @@
      "method": "wmp.flow.progress",
      "params": {
       "flow_id": "flow-authcode-001",
+      "step": "evaluating_trust"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-authcode-001",
       "step": "trust_evaluated"
      }
     }
@@ -188,7 +221,7 @@
      "method": "wmp.flow.progress",
      "params": {
       "flow_id": "flow-authcode-001",
-      "step": "authorization_url",
+      "step": "authorization_required",
       "payload": {
        "authorization_url": "*",
        "expected_redirect_uri": "https://wallet.example/cb",
@@ -378,7 +411,29 @@
      "method": "wmp.flow.progress",
      "params": {
       "flow_id": "flow-authcode-001",
-      "step": "token_received"
+      "step": "exchanging_token"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-authcode-001",
+      "step": "token_obtained"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-authcode-001",
+      "step": "requesting_credential"
      }
     }
    }

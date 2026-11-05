@@ -1,225 +1,269 @@
 {
-  "id": "vci.encryption.plain-refused.001",
-  "description": "The plain answer after the key was offered is REFUSED: the issuer's metadata declares credential_response_encryption required, the wallet's credential request carries the offer (the negotiated alg/enc and the ephemeral public key), and the issuer answers a plain 200 anyway. The engine refuses the flow \u2014 OpenID4VCI \u00a77.3: when the Wallet provides encryption parameters, the Issuer MUST encrypt the response. The Go engine accepts the plain answer; the Rust core follows the spec, and this vector records the divergence.",
-  "provenance": "spec",
-  "generator": {
-    "repo": "sirosfoundation/siros-wallet-core",
-    "commit": "6bf4a82b95985f31d455b38cf8394e2c99085464",
-    "date": "2026-11-04"
-  },
-  "spec_refs": [
-    "OpenID4VCI 1.0 section 7.3 (the issuer MUST encrypt when a key was offered)",
-    "d.vci.plain-response-after-key in docs/decisions.md"
-  ],
-  "known_divergence": "The Go engine accepts the plain 200 after negotiating encryption (P0.6 verification: requestCredential only enters the encrypted branch on the JWE content type; a plain 200 passes through). The Rust core refuses per the spec. An issue should track fixing the Go engine; until then this vector gates only the Rust runner.",
-  "setup": {
-    "time": 1700000000,
-    "entropy_seed": 42,
-    "pdp": {
-      "trusted": true,
-      "decision": "in the registry"
+ "id": "vci.encryption.plain-refused.001",
+ "description": "The plain answer after the key was offered is REFUSED: the issuer's metadata declares credential_response_encryption required, the wallet's credential request carries the offer (the negotiated alg/enc and the ephemeral public key), and the issuer answers a plain 200 anyway. The engine refuses the flow \u2014 OpenID4VCI \u00a77.3: when the Wallet provides encryption parameters, the Issuer MUST encrypt the response. The Go engine accepts the plain answer; the Rust core follows the spec, and this vector records the divergence.",
+ "provenance": "spec",
+ "generator": {
+  "repo": "sirosfoundation/siros-wallet-core",
+  "commit": "6bf4a82b95985f31d455b38cf8394e2c99085464",
+  "date": "2026-11-04"
+ },
+ "spec_refs": [
+  "OpenID4VCI 1.0 section 7.3 (the issuer MUST encrypt when a key was offered)",
+  "d.vci.plain-response-after-key in docs/decisions.md"
+ ],
+ "known_divergence": "The Go engine accepts the plain 200 after negotiating encryption (P0.6 verification: requestCredential only enters the encrypted branch on the JWE content type; a plain 200 passes through). The Rust core refuses per the spec. An issue should track fixing the Go engine; until then this vector gates only the Rust runner.",
+ "setup": {
+  "time": 1700000000,
+  "entropy_seed": 42,
+  "pdp": {
+   "trusted": true,
+   "decision": "in the registry"
+  }
+ },
+ "script": [
+  {
+   "wmp_in": {
+    "method": "wmp.flow.start",
+    "params": {
+     "flow_id": "flow-plain-refused-001",
+     "flow_type": "oid4vci",
+     "params": {
+      "credential_issuer": "https://issuer.example",
+      "credential_configuration_ids": [
+       "EncryptedDegree"
+      ],
+      "grants": {
+       "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
+        "pre-authorized_code": "preauth-plain-refused-001"
+       }
+      }
+     }
     }
+   }
   },
-  "script": [
-    {
-      "wmp_in": {
-        "method": "wmp.flow.start",
-        "params": {
-          "flow_id": "flow-plain-refused-001",
-          "flow_type": "oid4vci",
-          "params": {
-            "credential_issuer": "https://issuer.example",
-            "credential_configuration_ids": [
-              "EncryptedDegree"
-            ],
-            "grants": {
-              "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
-                "pre-authorized_code": "preauth-plain-refused-001"
-              }
-            }
-          }
-        }
-      }
+  {
+   "http_out": {
+    "expect": {
+     "method": "GET",
+     "url": "https://issuer.example/.well-known/openid-credential-issuer",
+     "purpose": "IssuerMetadata"
     },
-    {
-      "http_out": {
-        "expect": {
-          "method": "GET",
-          "url": "https://issuer.example/.well-known/openid-credential-issuer",
-          "purpose": "IssuerMetadata"
-        },
-        "reply": {
-          "status": 200,
-          "body": {
-            "credential_issuer": "https://issuer.example",
-            "authorization_servers": [
-              "https://as.example"
-            ],
-            "credential_configurations_supported": {
-              "EncryptedDegree": {
-                "scope": "openid",
-                "credential_response_encryption": {
-                  "alg_values_supported": [
-                    "ECDH-ES"
-                  ],
-                  "enc_values_supported": [
-                    "A256GCM",
-                    "A128GCM"
-                  ],
-                  "encryption_required": true
-                }
-              }
-            }
-          }
+    "reply": {
+     "status": 200,
+     "body": {
+      "credential_issuer": "https://issuer.example",
+      "authorization_servers": [
+       "https://as.example"
+      ],
+      "credential_configurations_supported": {
+       "EncryptedDegree": {
+        "scope": "openid",
+        "credential_response_encryption": {
+         "alg_values_supported": [
+          "ECDH-ES"
+         ],
+         "enc_values_supported": [
+          "A256GCM",
+          "A128GCM"
+         ],
+         "encryption_required": true
         }
+       }
       }
-    },
-    {
-      "http_out": {
-        "expect": {
-          "method": "GET",
-          "url": "https://as.example/.well-known/oauth-authorization-server",
-          "purpose": "AsMetadata"
-        },
-        "reply": {
-          "status": 200,
-          "body": {
-            "issuer": "https://as.example",
-            "token_endpoint": "https://as.example/token"
-          }
-        }
-      }
-    },
-    {
-      "http_out": {
-        "expect": {
-          "method": "POST",
-          "url": "https://as.example/token",
-          "purpose": "Token",
-          "form": {
-            "grant_type": "urn:ietf:params:oauth:grant-type:pre-authorized_code",
-            "pre-authorized_code": "preauth-plain-refused-001"
-          }
-        },
-        "reply": {
-          "status": 200,
-          "body": {
-            "access_token": "at-plain-refused-001",
-            "token_type": "Bearer",
-            "c_nonce": "nonce-plain-refused-001"
-          }
-        }
-      }
-    },
-    {
-      "host_ask": {
-        "expect": {
-          "kind": "sign"
-        },
-        "answer": {
-          "value": {
-            "signature": [
-              1,
-              2,
-              3,
-              4
-            ]
-          }
-        }
-      }
-    },
-    {
-      "http_out": {
-        "expect": {
-          "method": "POST",
-          "url": "https://issuer.example/credential",
-          "purpose": "Credential",
-          "json": {
-            "credential_configuration_id": "EncryptedDegree",
-            "credential_response_encryption": {
-              "enc": "A256GCM",
-              "jwk": {
-                "kty": "EC",
-                "crv": "P-256",
-                "x": "*",
-                "y": "*"
-              }
-            }
-          }
-        },
-        "reply": {
-          "status": 200,
-          "content_type": "application/json",
-          "body": {
-            "credential": "plain-credential-the-spec-forbids"
-          }
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.start"
-        },
-        "must_refuse": true,
-        "error_code": -31006
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "flow_id": "flow-plain-refused-001",
-            "step": "offer_parsed"
-          }
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "flow_id": "flow-plain-refused-001",
-            "step": "metadata_resolved"
-          }
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "flow_id": "flow-plain-refused-001",
-            "step": "as_discovered"
-          }
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "flow_id": "flow-plain-refused-001",
-            "step": "trust_evaluated"
-          }
-        }
-      }
-    },
-    {
-      "wmp_out": {
-        "expect": {
-          "method": "wmp.flow.progress",
-          "params": {
-            "flow_id": "flow-plain-refused-001",
-            "step": "token_received"
-          }
-        }
-      }
+     }
     }
-  ],
-  "notes": "The refusal is the flow start's own answer (must_refuse on the response), not a later wmp.flow.error: the engine refuses the issuance the moment the plain body arrives, and the progress messages emitted before the credential request still went out. The credential request's jwk members are wildcarded \u2014 the ephemeral key is engine-generated."
+   }
+  },
+  {
+   "http_out": {
+    "expect": {
+     "method": "GET",
+     "url": "https://as.example/.well-known/oauth-authorization-server",
+     "purpose": "AsMetadata"
+    },
+    "reply": {
+     "status": 200,
+     "body": {
+      "issuer": "https://as.example",
+      "token_endpoint": "https://as.example/token"
+     }
+    }
+   }
+  },
+  {
+   "http_out": {
+    "expect": {
+     "method": "POST",
+     "url": "https://as.example/token",
+     "purpose": "Token",
+     "form": {
+      "grant_type": "urn:ietf:params:oauth:grant-type:pre-authorized_code",
+      "pre-authorized_code": "preauth-plain-refused-001"
+     }
+    },
+    "reply": {
+     "status": 200,
+     "body": {
+      "access_token": "at-plain-refused-001",
+      "token_type": "Bearer",
+      "c_nonce": "nonce-plain-refused-001"
+     }
+    }
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "sign"
+    },
+    "answer": {
+     "value": {
+      "signature": [
+       1,
+       2,
+       3,
+       4
+      ]
+     }
+    }
+   }
+  },
+  {
+   "http_out": {
+    "expect": {
+     "method": "POST",
+     "url": "https://issuer.example/credential",
+     "purpose": "Credential",
+     "json": {
+      "credential_configuration_id": "EncryptedDegree",
+      "credential_response_encryption": {
+       "enc": "A256GCM",
+       "jwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "*",
+        "y": "*"
+       }
+      }
+     }
+    },
+    "reply": {
+     "status": 200,
+     "content_type": "application/json",
+     "body": {
+      "credential": "plain-credential-the-spec-forbids"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.start"
+    },
+    "must_refuse": true,
+    "error_code": -31006
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-plain-refused-001",
+      "step": "parsing_offer"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-plain-refused-001",
+      "step": "offer_parsed"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-plain-refused-001",
+      "step": "fetching_metadata"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-plain-refused-001",
+      "step": "metadata_fetched"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-plain-refused-001",
+      "step": "as_discovered"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-plain-refused-001",
+      "step": "evaluating_trust"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-plain-refused-001",
+      "step": "trust_evaluated"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-plain-refused-001",
+      "step": "exchanging_token"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-plain-refused-001",
+      "step": "token_obtained"
+     }
+    }
+   }
+  }
+ ],
+ "notes": "The refusal is the flow start's own answer (must_refuse on the response), not a later wmp.flow.error: the engine refuses the issuance the moment the plain body arrives, and the progress messages emitted before the credential request still went out. The credential request's jwk members are wildcarded \u2014 the ephemeral key is engine-generated."
 }
