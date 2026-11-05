@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-python@423e53c060d3baad2ff6b1e1673e1b1b8a0e84d1 # v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
       - run: pip install jsonschema
@@ -23,14 +23,18 @@ jobs:
       - name: Validate every vector file
         run: |
           python - <<'PY'
-          import glob, sys
+          import glob, sys, json
           import jsonschema
-          schema = __import__("json").load(open("vector-schema.json"))
+          schema = json.load(open("vector-schema.json"))
           validator = jsonschema.Draft202012Validator(schema)
           failed = False
           for path in sorted(glob.glob("vectors/*.json")):
-              import json
-              for i, vector in enumerate(json.load(open(path))):
+              loaded = json.load(open(path))
+              # A vector file holds one vector as an object (the
+              # repository's convention since the first file); an
+              # array is accepted where a file carries several.
+              vectors = loaded if isinstance(loaded, list) else [loaded]
+              for i, vector in enumerate(vectors):
                   for error in validator.iter_errors(vector):
                       print(f"{path}[{i}]: {error.message}")
                       failed = True

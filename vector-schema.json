@@ -13,8 +13,8 @@
   "properties": {
     "id": {
       "type": "string",
-      "pattern": "^[a-z0-9]+(\\.[a-z0-9]+)*$",
-      "description": "Dotted lowercase identifier, e.g. vci.preauth.tx_code.001."
+      "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*$",
+      "description": "Dotted lowercase identifier, with hyphens and underscores inside the segments, e.g. vci.oidf.authcode-private-key-jwt.001."
     },
     "description": {
       "type": "string"
