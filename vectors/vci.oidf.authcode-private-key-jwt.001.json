@@ -1,10 +1,10 @@
 {
  "id": "vci.oidf.authcode-private-key-jwt.001",
  "description": "The private_key_jwt client authentication on the authorization-code grant (RFC 7523): the AS metadata names the method, so the code-for-token POST and the PAR push both carry the client assertion \u2014 the engine builds it, the host signs it with the wallet\u2019s registered key (named by the client_key_kid the flow start carried and the stash relayed across the reload). The assertion\u2019s type and value ride the pushed form beside the authorization parameters (RFC 9126 \u00a72.1) and the token form beside the code, its verifier and the resource.",
- "provenance": "spec",
+ "provenance": "oidf",
  "generator": {
   "repo": "sirosfoundation/siros-wallet-core",
-  "commit": "220f4b61aed3cf6c488dba77fe87d5890effcd80",
+  "commit": "033c5eb88ca1062145f3b7db10bc2585776cf09b",
   "date": "2026-11-05"
  },
  "spec_refs": [
@@ -411,5 +411,5 @@
    }
   }
  ],
- "notes": "The same two-call transcript as vci.authcode.basic.001, with the AS naming private_key_jwt: each client-authenticated POST \u2014 the PAR push and the token exchange \u2014 is preceded by its assertion sign ask, keyed by the registered kid, and carries the assertion members on its form. The pre-authorized grant\u2019s suite-validated assertion (vci.oidf.private-key-jwt.001) is the wire this resume mirrors; the suite has not yet run the authorization-code variant."
+ "notes": "The same two-call transcript as vci.authcode.basic.001, with the AS naming private_key_jwt: each client-authenticated POST \u2014 the PAR push and the token exchange \u2014 is preceded by its assertion sign ask, keyed by the registered kid, and carries the assertion members on its form. Suite-validated on 2026-11-05: both issuance modes of the oid4vci-1_0-wallet-test-plan authorization_code variant passed against the engine through the mini-wallet (plans qxakXX5iipJh4 and hBdQN9b9fHxXP, suite 5.3.4; the evidence is archived under results/mini-wallet/2026-11-05 in siros-conformance). Revert-proven: with the engine\u2019s assertion building reverted, the vector fails on the missing client_assertion form members."
 }
