@@ -1,0 +1,226 @@
+{
+ "id": "vp.oidf.x509-hash.basic.001",
+ "description": "The x509_hash client_id scheme (OpenID4VP 1.0 \u00a75.2.3, the HAIP profile's verifier identification): the client_id is the base64url SHA-256 over the verifier's DER-encoded certificate, the request object's JWS header carries the x5c chain, and the engine checks the hash against the leaf in constant time after verifying the JWS under the leaf's key \u2014 refusing an unsigned or chainless request under the scheme. The presentation then flows as the plain plans': the match, the consent, the VP, the direct_post response.",
+ "provenance": "oidf",
+ "generator": {
+  "repo": "sirosfoundation/siros-wallet-core",
+  "commit": "48622e1f6998986259b51d1e0ce16fa0d12918d9",
+  "date": "2026-11-05"
+ },
+ "spec_refs": [
+  "OpenID4VP 1.0 section 5.2.3 (the x509_hash client_id scheme)",
+  "RFC 7515 section 4.1.6 (the x5c header carries the chain)",
+  "OpenID4VP 1.0 section 8.1 (the direct_post vp_token)"
+ ],
+ "setup": {
+  "time": 1700000000,
+  "entropy_seed": 42,
+  "pdp": {
+   "trusted": true,
+   "decision": "in the registry"
+  }
+ },
+ "script": [
+  {
+   "wmp_in": {
+    "method": "wmp.flow.start",
+    "params": {
+     "flow_id": "flow-vp-x509-hash-001",
+     "flow_type": "oid4vp",
+     "params": {
+      "request_uri": "https://verifier.example/request"
+     }
+    }
+   }
+  },
+  {
+   "http_out": {
+    "expect": {
+     "method": "GET",
+     "url": "https://verifier.example/request",
+     "purpose": "RequestObject"
+    },
+    "reply": {
+     "status": 200,
+     "body": "eyJ4NWMiOlsiTUlJQnZqQ0NBV09nQXdJQkFnSVVmdzRpbjJ4YmJhTzRCUlZ6Q01KOWpjeCtNWVV3Q2dZSUtvWkl6ajBFQXdJd0lqRWdNQjRHQTFVRUF3d1hZMjl1Wm05eWJXRnVZMlV1WlhoaGJYQnNaUzVqYjIwd0hoY05Nall3TlRFMU1EYzFNelExV2hjTk1qY3dOVEUxTURjMU16UTFXakFpTVNBd0hnWURWUVFEREJkamIyNW1iM0p0WVc1alpTNWxlR0Z0Y0d4bExtTnZiVEJaTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEEwSUFCQno3UkdCQkVEUm5EaGhyVUY1NXZGVzI2OGxtRGhlM1paa3luQThDTVpPdEtudjAyOTY4WFNpRW1OU29HUGFIWDNMWGwrYm9RenRzSzBEQjQ2VmhFNitqZHpCMU1CMEdBMVVkRGdRV0JCUi96QTdoMytpa0tCb2EzanlNaVNYN3NGZGt5ekFmQmdOVkhTTUVHREFXZ0JSL3pBN2gzK2lrS0JvYTNqeU1pU1g3c0Zka3l6QVBCZ05WSFJNQkFmOEVCVEFEQVFIL01DSUdBMVVkRVFRYk1CbUNGMk52Ym1admNtMWhibU5sTG1WNFlXMXdiR1V1WTI5dE1Bb0dDQ3FHU000OUJBTUNBMGtBTUVZQ0lRQzRsaHh3aVF5MytHUHR6ZFFXOUlsRFNyUW9Fbm5jb202WXNLWjNpekh1SWdJaEFLWklqTllXVEcweElwRnJTNERWa3ZvMXFpVjlrTmYxUXZwOFN0T1c2cEVyIl0sImtpZCI6InZwLXZlcmlmaWVyLWtleS0xIiwidHlwIjoib2F1dGgtYXV0aHotcmVxK2p3dCIsImFsZyI6IkVTMjU2In0.eyJjbGllbnRfaWQiOiJ4NTA5X2hhc2g6dUNCR3hteTdEMmVEREF0Tmp6ZmdiRWc4NzhjbEUtRGF3S3JYa0lyMlF5MCIsIm5vbmNlIjoibm9uY2UtdnAtaGFzaC0wMDEiLCJyZXNwb25zZV91cmkiOiJodHRwczovL3ZlcmlmaWVyLmV4YW1wbGUvcmVzcG9uc2UiLCJyZXNwb25zZV9tb2RlIjoiZGlyZWN0X3Bvc3QiLCJzdGF0ZSI6InN0YXRlLXZwLWhhc2gtMDAxIiwiZGNxbF9xdWVyeSI6eyJjcmVkZW50aWFscyI6W3siaWQiOiJwaWQtcXVlcnkiLCJtZXRhIjp7InZjdF92YWx1ZXMiOlsidXJuOnBpZCJdfX1dfX0.8mSQty9h-Bw8RhJrfOMGzOjcpYc6zKt-AY3BKBO6ohtv7M6RA4h0Mxsr_4bRnUC-NIU-B4GDE5nAbVJ9Cp-bYg"
+    }
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "match",
+     "inputs": {
+      "flow_id": "flow-vp-x509-hash-001",
+      "dcql_query": {
+       "credentials": [
+        {
+         "id": "pid-query",
+         "meta": {
+          "vct_values": [
+           "urn:pid"
+          ]
+         }
+        }
+       ]
+      },
+      "verifier": {
+       "client_id": "x509_hash:uCBGxmy7D2eDDAtNjzfgbEg878clE-DawKrXkIr2Qy0",
+       "domain": "x509_hash:uCBGxmy7D2eDDAtNjzfgbEg878clE-DawKrXkIr2Qy0",
+       "trusted": true
+      }
+     }
+    },
+    "answer": {
+     "value": {
+      "selections": [
+       {
+        "credential_query_id": "pid-query",
+        "credential_id": "cred-pid-001"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "consent"
+    },
+    "answer": {
+     "value": {
+      "consented": true
+     }
+    }
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "presentation",
+     "inputs": {
+      "flow_id": "flow-vp-x509-hash-001",
+      "audience": "x509_hash:uCBGxmy7D2eDDAtNjzfgbEg878clE-DawKrXkIr2Qy0",
+      "nonce": "nonce-vp-hash-001",
+      "response_uri": "https://verifier.example/response",
+      "selections": [
+       {
+        "credential_query_id": "pid-query",
+        "credential_id": "cred-pid-001"
+       }
+      ]
+     }
+    },
+    "answer": {
+     "value": {
+      "vp_token": "token-pid-001"
+     }
+    }
+   }
+  },
+  {
+   "http_out": {
+    "expect": {
+     "method": "POST",
+     "url": "https://verifier.example/response",
+     "purpose": "DirectPost",
+     "form": {
+      "state": "state-vp-hash-001"
+     }
+    },
+    "reply": {
+     "status": 200,
+     "body": {
+      "redirect_uri": "https://verifier.example/done"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-x509-hash-001",
+      "step": "request_parsed"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-x509-hash-001",
+      "step": "trust_evaluated"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-x509-hash-001",
+      "step": "transaction_data_validated"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-x509-hash-001",
+      "step": "credential_selected"
+     }
+    }
+   }
+  },
+  {
+   "host_ask": {
+    "expect": {
+     "kind": "open_authorization",
+     "inputs": {
+      "url": "https://verifier.example/done"
+     }
+    },
+    "answer": {
+     "value": {}
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.progress",
+     "params": {
+      "flow_id": "flow-vp-x509-hash-001",
+      "step": "redirect_opened"
+     }
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.complete",
+     "params": {
+      "flow_id": "flow-vp-x509-hash-001",
+      "result": {
+       "presented": true,
+       "credential_ids": [
+        "cred-pid-001"
+       ]
+      }
+     }
+    }
+   }
+  }
+ ],
+ "notes": "The request object is the suite's own verifier key material (siros-conformance's vp-wallet-config.json): the x5c's leaf DER hashes to the client_id's value. Suite-validated on 2026-11-05: the OIDF OID4VP HAIP wallet plan (oid4vp-1final-wallet-haip-test-plan, sd_jwt_vc / eudi_pid / direct_post.jwt) passed against the engine through the mini-wallet (plan x03k3BO5eKEsQ, suite 5.3.4; the evidence is archived under results/mini-wallet-vp-haip/2026-11-05 in siros-conformance)."
+}

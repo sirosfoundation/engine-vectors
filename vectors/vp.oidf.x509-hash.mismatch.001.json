@@ -1,0 +1,58 @@
+{
+ "id": "vp.oidf.x509-hash.mismatch.001",
+ "description": "The x509_hash scheme's hash check (OpenID4VP 1.0 \u00a75.2.3): a request object whose x5c chain is validly signed but whose client_id names a DIFFERENT certificate \u2014 the base64url SHA-256 does not match the leaf's DER \u2014 is refused: the flow start answers with -31006 before any ask or fetch beyond the request object.",
+ "provenance": "oidf",
+ "generator": {
+  "repo": "sirosfoundation/siros-wallet-core",
+  "commit": "48622e1f6998986259b51d1e0ce16fa0d12918d9",
+  "date": "2026-11-05"
+ },
+ "spec_refs": [
+  "OpenID4VP 1.0 section 5.2.3 (the client_id MUST be the base64url SHA-256 over the certificate)"
+ ],
+ "setup": {
+  "time": 1700000000,
+  "entropy_seed": 42,
+  "pdp": {
+   "trusted": true,
+   "decision": "in the registry"
+  }
+ },
+ "script": [
+  {
+   "wmp_in": {
+    "method": "wmp.flow.start",
+    "params": {
+     "flow_id": "flow-vp-x509-hash-mismatch-001",
+     "flow_type": "oid4vp",
+     "params": {
+      "request_uri": "https://verifier.example/request"
+     }
+    }
+   }
+  },
+  {
+   "http_out": {
+    "expect": {
+     "method": "GET",
+     "url": "https://verifier.example/request",
+     "purpose": "RequestObject"
+    },
+    "reply": {
+     "status": 200,
+     "body": "eyJ4NWMiOlsiTUlJQnZqQ0NBV09nQXdJQkFnSVVmdzRpbjJ4YmJhTzRCUlZ6Q01KOWpjeCtNWVV3Q2dZSUtvWkl6ajBFQXdJd0lqRWdNQjRHQTFVRUF3d1hZMjl1Wm05eWJXRnVZMlV1WlhoaGJYQnNaUzVqYjIwd0hoY05Nall3TlRFMU1EYzFNelExV2hjTk1qY3dOVEUxTURjMU16UTFXakFpTVNBd0hnWURWUVFEREJkamIyNW1iM0p0WVc1alpTNWxlR0Z0Y0d4bExtTnZiVEJaTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEEwSUFCQno3UkdCQkVEUm5EaGhyVUY1NXZGVzI2OGxtRGhlM1paa3luQThDTVpPdEtudjAyOTY4WFNpRW1OU29HUGFIWDNMWGwrYm9RenRzSzBEQjQ2VmhFNitqZHpCMU1CMEdBMVVkRGdRV0JCUi96QTdoMytpa0tCb2EzanlNaVNYN3NGZGt5ekFmQmdOVkhTTUVHREFXZ0JSL3pBN2gzK2lrS0JvYTNqeU1pU1g3c0Zka3l6QVBCZ05WSFJNQkFmOEVCVEFEQVFIL01DSUdBMVVkRVFRYk1CbUNGMk52Ym1admNtMWhibU5sTG1WNFlXMXdiR1V1WTI5dE1Bb0dDQ3FHU000OUJBTUNBMGtBTUVZQ0lRQzRsaHh3aVF5MytHUHR6ZFFXOUlsRFNyUW9Fbm5jb202WXNLWjNpekh1SWdJaEFLWklqTllXVEcweElwRnJTNERWa3ZvMXFpVjlrTmYxUXZwOFN0T1c2cEVyIl0sImtpZCI6InZwLXZlcmlmaWVyLWtleS0xIiwidHlwIjoib2F1dGgtYXV0aHotcmVxK2p3dCIsImFsZyI6IkVTMjU2In0.eyJjbGllbnRfaWQiOiJ4NTA5X2hhc2g6QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQSIsIm5vbmNlIjoibm9uY2UtdnAtaGFzaC1taXNtYXRjaC0wMDEiLCJyZXNwb25zZV91cmkiOiJodHRwczovL3ZlcmlmaWVyLmV4YW1wbGUvcmVzcG9uc2UiLCJyZXNwb25zZV9tb2RlIjoiZGlyZWN0X3Bvc3QiLCJzdGF0ZSI6InN0YXRlLXZwLWhhc2gtbWlzbWF0Y2gtMDAxIiwiZGNxbF9xdWVyeSI6eyJjcmVkZW50aWFscyI6W3siaWQiOiJwaWQtcXVlcnkiLCJtZXRhIjp7InZjdF92YWx1ZXMiOlsidXJuOnBpZCJdfX1dfX0.67hlTYVnM37UdFoddRfL18atqzideExGs6Wuhu17wfmlm4cCT5XQa20Odb3vTXQfc58lCqyYPVV9tB97a3b5Kw"
+    }
+   }
+  },
+  {
+   "wmp_out": {
+    "expect": {
+     "method": "wmp.flow.start"
+    },
+    "must_refuse": true,
+    "error_code": -31006
+   }
+  }
+ ],
+ "notes": "The counterpart of vp.oidf.x509-hash.basic.001: the same verifier key material and a validly signed request object, with the client_id's hash replaced by a valid-shaped wrong value. Suite-validated on 2026-11-05 (the OID4VP HAIP wallet plan's negative modules \u2014 the wallet refuses each invalid request for the right reason)."
+}
