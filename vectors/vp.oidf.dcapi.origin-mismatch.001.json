@@ -1,0 +1,58 @@
+{
+  "id": "vp.oidf.dcapi.origin-mismatch.001",
+  "description": "The dc_api origin binding refused: the caller's actual origin is not one the request's expected_origins named (OpenID4VP 1.0 §8.4) — the wallet answers the flow with an error and never presents.",
+  "provenance": "oidf",
+  "generator": {
+    "repo": "sirosfoundation/siros-wallet-core",
+    "commit": "88747a34234d6dda7886062bc7c817b68593b887",
+    "date": "2026-11-09"
+  },
+  "spec_refs": [
+    "OpenID4VP 1.0 section 8.4 (the Digital Credentials API response modes: the caller's origin must be one the request's expected_origins named)",
+    "OpenID4VP 1.0 section 5.1 (expected_origins)"
+  ],
+  "setup": {
+    "time": 1700000000,
+    "entropy_seed": 42,
+    "pdp": {
+      "trusted": true,
+      "decision": "in the registry"
+    }
+  },
+  "script": [
+    {
+      "wmp_in": {
+        "method": "wmp.flow.start",
+        "params": {
+          "flow_id": "flow-vp-dcapi-origin-001",
+          "flow_type": "oid4vp",
+          "params": {
+            "client_id": "https://verifier.example",
+            "nonce": "nonce-dcapi-origin-001",
+            "response_mode": "dc_api",
+            "response_type": "vp_token",
+            "expected_origins": ["https://verifier.example"],
+            "origin": "https://attacker.example",
+            "dcql_query": {
+              "credentials": [
+                {
+                  "id": "pid-query",
+                  "format": "dc+sd-jwt",
+                  "meta": { "vct_values": ["urn:eudi:pid:1"] }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": { "method": "wmp.flow.start" },
+        "must_refuse": true,
+        "error_code": -31006
+      }
+    }
+  ],
+  "notes": "Suite-validated on 2026-11-09: the dc_api module group's wrong-expected-origins negative — the wallet refuses the request whose expected_origins do not name the caller's origin (plan t8zTXhIGHDy25; the refusal's reason recorded in the run's flow errors)."
+}

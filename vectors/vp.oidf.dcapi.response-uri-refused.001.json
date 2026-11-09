@@ -1,0 +1,59 @@
+{
+  "id": "vp.oidf.dcapi.response-uri-refused.001",
+  "description": "A dc_api request naming a response_uri (or a redirect_uri) refuses: the Digital Credentials API channel's answer returns through the browser, never a wallet-side POST (OpenID4VP 1.0 §8.4).",
+  "provenance": "oidf",
+  "generator": {
+    "repo": "sirosfoundation/siros-wallet-core",
+    "commit": "88747a34234d6dda7886062bc7c817b68593b887",
+    "date": "2026-11-09"
+  },
+  "spec_refs": [
+    "OpenID4VP 1.0 section 8.4 (the Digital Credentials API response modes: no wallet-side POST)",
+    "OpenID4VP 1.0 section 5 (response_uri belongs to the direct_post channel)"
+  ],
+  "setup": {
+    "time": 1700000000,
+    "entropy_seed": 42,
+    "pdp": {
+      "trusted": true,
+      "decision": "in the registry"
+    }
+  },
+  "script": [
+    {
+      "wmp_in": {
+        "method": "wmp.flow.start",
+        "params": {
+          "flow_id": "flow-vp-dcapi-uri-001",
+          "flow_type": "oid4vp",
+          "params": {
+            "client_id": "https://verifier.example",
+            "nonce": "nonce-dcapi-uri-001",
+            "response_mode": "dc_api",
+            "response_type": "vp_token",
+            "expected_origins": ["https://verifier.example"],
+            "origin": "https://verifier.example",
+            "response_uri": "https://verifier.example/response",
+            "dcql_query": {
+              "credentials": [
+                {
+                  "id": "pid-query",
+                  "format": "dc+sd-jwt",
+                  "meta": { "vct_values": ["urn:eudi:pid:1"] }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": { "method": "wmp.flow.start" },
+        "must_refuse": true,
+        "error_code": -31006
+      }
+    }
+  ],
+  "notes": "The channel-fault refusal: a request that mixes the channels — the dc_api response mode with a direct_post response_uri — never presents. Suite-adjacent on 2026-11-09: the dc_api group's parse-level refusals all answer the flow error (plan t8zTXhIGHDy25); this exact fault is the §8.4 rule the group's happy paths prove by their absence of any POST."
+}

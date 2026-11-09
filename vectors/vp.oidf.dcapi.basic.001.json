@@ -1,0 +1,226 @@
+{
+  "id": "vp.oidf.dcapi.basic.001",
+  "description": "The Digital Credentials API channel (OpenID4VP 1.0 \u00a78.4): the wallet never POSTs its answer back \u2014 the flow completes with the DigitalCredential's data (the plain response object for dc_api), and the caller's actual origin, validated against the request's expected_origins, rides the presentation ask for the KB-JWT's aud.",
+  "provenance": "oidf",
+  "generator": {
+    "repo": "sirosfoundation/siros-wallet-core",
+    "commit": "88747a34234d6dda7886062bc7c817b68593b887",
+    "date": "2026-11-09"
+  },
+  "spec_refs": [
+    "OpenID4VP 1.0 section 8.4 (the Digital Credentials API response modes: the response returns through the browser, never a wallet-side POST)",
+    "OpenID4VP 1.0 section 5.1 (expected_origins: the verifier page's origins the request binds to)",
+    "HAIP-1.0 section 7.3.2 (the KB-JWT's aud on the DC API channel: the origin)"
+  ],
+  "setup": {
+    "time": 1700000000,
+    "entropy_seed": 42,
+    "pdp": {
+      "trusted": true,
+      "decision": "in the registry"
+    }
+  },
+  "script": [
+    {
+      "wmp_in": {
+        "method": "wmp.flow.start",
+        "params": {
+          "flow_id": "flow-vp-dcapi-001",
+          "flow_type": "oid4vp",
+          "params": {
+            "client_id": "https://verifier.example",
+            "nonce": "nonce-dcapi-001",
+            "response_mode": "dc_api",
+            "response_type": "vp_token",
+            "expected_origins": [
+              "https://verifier.example"
+            ],
+            "origin": "https://verifier.example",
+            "dcql_query": {
+              "credentials": [
+                {
+                  "id": "pid-query",
+                  "format": "dc+sd-jwt",
+                  "meta": {
+                    "vct_values": [
+                      "urn:eudi:pid:1"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "match"
+        },
+        "answer": {
+          "value": {
+            "selections": [
+              {
+                "credential_query_id": "pid-query",
+                "credential_id": "cred-pid-1",
+                "disclosed_claims": [
+                  "[\"given_name\"]"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "consent"
+        },
+        "answer": {
+          "value": {
+            "consented": true
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "presentation",
+          "inputs": {
+            "origin": "https://verifier.example"
+          }
+        },
+        "answer": {
+          "value": {
+            "vp_token": "vp-token-dcapi-001"
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://verifier.example/*",
+          "purpose": "DirectPost",
+          "must_refuse": true
+        },
+        "reply": {
+          "status": 200,
+          "body": {}
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-vp-dcapi-001",
+            "step": "parsing_request"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-vp-dcapi-001",
+            "step": "request_parsed"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-vp-dcapi-001",
+            "step": "evaluating_verifier_trust"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-vp-dcapi-001",
+            "step": "trust_evaluated"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-vp-dcapi-001",
+            "step": "transaction_data_validated"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-vp-dcapi-001",
+            "step": "credential_selection"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-vp-dcapi-001",
+            "step": "submitting_response"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-vp-dcapi-001",
+            "step": "response_returned"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.complete",
+          "params": {
+            "flow_id": "flow-vp-dcapi-001",
+            "result": {
+              "presented": true,
+              "credential_ids": [
+                "cred-pid-1"
+              ],
+              "dc_api_response": {
+                "vp_token": "{\"pid-query\":[\"vp-token-dcapi-001\"]}"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "notes": "Suite-validated on 2026-11-09: the OIDF OID4VP HAIP wallet plan's dc_api module group (oid4vp-1final-wallet-haip-test-plan, sd_jwt_vc / eudi_pid / x509_hash / dc_api.jwt / request_uri_signed) green against the engine through the mini-wallet \u2014 11 modules PASSED, the eight negatives REVIEW (plan t8zTXhIGHDy25, suite 5.3.4; the evidence is archived in siros-conformance/results/mini-wallet-vp-dcapi/2026-11-09/ and on the Pages site under runs/mini-wallet-vp-dcapi-2026-11-09). The vector uses the plain by-value form \u2014 the suite's request is a signed JWT carried inside the browser API's {digital: {requests: [...]}} payload, but the \u00a78.4 semantics this pins are post-parse: no wallet-side POST, the completion carrying the DigitalCredential's data, and the actual origin (the transport's input) riding the presentation ask. The suite's own page posts {data, protocol} to the module's browser API submit URL \u2014 the harness plays that role."
+}
