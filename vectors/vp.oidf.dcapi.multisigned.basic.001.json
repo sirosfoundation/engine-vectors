@@ -1,0 +1,207 @@
+{
+  "id": "vp.oidf.dcapi.multisigned.basic.001",
+  "description": "The multi-signed request object on the Digital Credentials API channel (RFC 7515 \u00a77.2, the JWS JSON Serialization): both signatures valid, the client_id riding the signatures' protected headers (each cert's binding) \u2014 the wallet parses, presents, and never POSTs (\u00a78.4).",
+  "provenance": "oidf",
+  "generator": {
+    "repo": "sirosfoundation/siros-wallet-core",
+    "commit": "3a94dfd2768d0c547e77b40a58b7c197a1e70fca",
+    "date": "2026-11-10"
+  },
+  "spec_refs": [
+    "RFC 7515 section 7.2 (the JWS JSON Serialization)",
+    "OpenID4VP 1.0 section 8.4 (the Digital Credentials API response modes)",
+    "OpenID4VP 1.0 section 5.2.3 (the x509_hash client_id scheme \u2014 the leaf DER's base64url SHA-256)"
+  ],
+  "setup": {
+    "time": 1700000000,
+    "entropy_seed": 42,
+    "pdp": {
+      "trusted": true,
+      "decision": "in the registry"
+    }
+  },
+  "script": [
+    {
+      "wmp_in": {
+        "method": "wmp.flow.start",
+        "params": {
+          "flow_id": "flow-vp-dcapi-ms-001",
+          "flow_type": "oid4vp",
+          "params": {
+            "request": "{\"payload\":\"eyJub25jZSI6Im5vbmNlLW1zaWduZWQtMDAxIiwicmVzcG9uc2VfbW9kZSI6ImRjX2FwaSIsInJlc3BvbnNlX3R5cGUiOiJ2cF90b2tlbiIsImNsaWVudF9pZCI6Ing1MDlfaGFzaDp1Q0JHeG15N0QyZUREQXROanpmZ2JFZzg3OGNsRS1EYXdLclhrSXIyUXkwIiwiZXhwZWN0ZWRfb3JpZ2lucyI6WyJodHRwczovL3ZlcmlmaWVyLmV4YW1wbGUiXSwiZGNxbF9xdWVyeSI6eyJjcmVkZW50aWFscyI6W3siaWQiOiJwaWQtcXVlcnkiLCJmb3JtYXQiOiJkYytzZC1qd3QiLCJtZXRhIjp7InZjdF92YWx1ZXMiOlsidXJuOmV1ZGk6cGlkOjEiXX19XX19\",\"signatures\":[{\"protected\":\"eyJ0eXAiOiJvYXV0aC1hdXRoei1yZXErand0IiwiYWxnIjoiRVMyNTYiLCJjbGllbnRfaWQiOiJ4NTA5X2hhc2g6dUNCR3hteTdEMmVEREF0Tmp6ZmdiRWc4NzhjbEUtRGF3S3JYa0lyMlF5MCIsIng1YyI6WyJNSUlCdmpDQ0FXT2dBd0lCQWdJVWZ3NGluMnhiYmFPNEJSVnpDTUo5amN4K01ZVXdDZ1lJS29aSXpqMEVBd0l3SWpFZ01CNEdBMVVFQXd3WFkyOXVabTl5YldGdVkyVXVaWGhoYlhCc1pTNWpiMjB3SGhjTk1qWXdOVEUxTURjMU16UTFXaGNOTWpjd05URTFNRGMxTXpRMVdqQWlNU0F3SGdZRFZRUUREQmRqYjI1bWIzSnRZVzVqWlM1bGVHRnRjR3hsTG1OdmJUQlpNQk1HQnlxR1NNNDlBZ0VHQ0NxR1NNNDlBd0VIQTBJQUJCejdSR0JCRURSbkRoaHJVRjU1dkZXMjY4bG1EaGUzWlpreW5BOENNWk90S252MDI5NjhYU2lFbU5Tb0dQYUhYM0xYbCtib1F6dHNLMERCNDZWaEU2K2pkekIxTUIwR0ExVWREZ1FXQkJSL3pBN2gzK2lrS0JvYTNqeU1pU1g3c0Zka3l6QWZCZ05WSFNNRUdEQVdnQlIvekE3aDMraWtLQm9hM2p5TWlTWDdzRmRreXpBUEJnTlZIUk1CQWY4RUJUQURBUUgvTUNJR0ExVWRFUVFiTUJtQ0YyTnZibVp2Y20xaGJtTmxMbVY0WVcxd2JHVXVZMjl0TUFvR0NDcUdTTTQ5QkFNQ0Ewa0FNRVlDSVFDNGxoeHdpUXkzK0dQdHpkUVc5SWxEU3JRb0VubmNvbTZZc0taM2l6SHVJZ0loQUtaSWpOWVdURzB4SXBGclM0RFZrdm8xcWlWOWtOZjFRdnA4U3RPVzZwRXIiXSwia2lkIjoidnAtdmVyaWZpZXIta2V5LTEifQ\",\"signature\":\"MEQCIAqjKPWvpVjBMu1gyHAPcEbxp3XV5cQ-aIHrLR-kNV5iAiA5C90DJ36QW-lIddSXdal_n_iL1Ilhp3tiF5HtLo5bFw\"},{\"protected\":\"eyJ0eXAiOiJvYXV0aC1hdXRoei1yZXErand0IiwiYWxnIjoiRVMyNTYiLCJjbGllbnRfaWQiOiJ4NTA5X2hhc2g6dUNCR3hteTdEMmVEREF0Tmp6ZmdiRWc4NzhjbEUtRGF3S3JYa0lyMlF5MCIsIng1YyI6WyJNSUlDbnpDQ0FrU2dBd0lCQWdJVUlnMVYzdTFIcGUvNzhFN0IxVzdydFh4enY4a3dDZ1lJS29aSXpqMEVBd0l3Z1lzeEN6QUpCZ05WQkFZVEFsTkZNUTB3Q3dZRFZRUUlEQVJVWlhOME1SVXdFd1lEVlFRSERBeE5hVzVwSUZSbGMzUnBibWN4R1RBWEJnTlZCQW9NRUUxcGJta2dWMkZzYkdWMElGUmxjM1F4R1RBWEJnTlZCQXNNRUZabGNtbG1hV1Z5SUZOcFoyNXBibWN4SURBZUJnTlZCQU1NRjJOdmJtWnZjbTFoYm1ObExtVjRZVzF3YkdVdVkyOXRNQjRYRFRJMk1URXdPVEl6TVRjME1Wb1hEVEkzTVRFd09USXpNVGMwTVZvd2dZc3hDekFKQmdOVkJBWVRBbE5GTVEwd0N3WURWUVFJREFSVVpYTjBNUlV3RXdZRFZRUUhEQXhOYVc1cElGUmxjM1JwYm1jeEdUQVhCZ05WQkFvTUVFMXBibWtnVjJGc2JHVjBJRlJsYzNReEdUQVhCZ05WQkFzTUVGWmxjbWxtYVdWeUlGTnBaMjVwYm1jeElEQWVCZ05WQkFNTUYyTnZibVp2Y20xaGJtTmxMbVY0WVcxd2JHVXVZMjl0TUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFTVRQMnZoWWJ4RUxVSForRDlXNy9hbXk3SFdXNnJtemVza0RKU013bUxtVWFjaFgrb3BVeWxNajVuUVZiZG5PZXBncGJwUVdUUlRXTXJydnV6TW53bTZPQmd6Q0JnREFNQmdOVkhSTUJBZjhFQWpBQU1BNEdBMVVkRHdFQi93UUVBd0lIZ0RBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUlLd1lCQlFVSEF3SXdJZ1lEVlIwUkJCc3dHWUlYWTI5dVptOXliV0Z1WTJVdVpYaGhiWEJzWlM1amIyMHdIUVlEVlIwT0JCWUVGRGNxcDRwZUxSRHFJSGpLc1VXc0FVNmpFSlFJTUFvR0NDcUdTTTQ5QkFNQ0Ewa0FNRVlDSVFDVHMyNlFEaXhVWEVKc0hGcHdWRHNWeFFxTmtBcC9jdklRcENlOGY2V1k0Z0loQUtaOS84a1ZreEtaQzVaV2tlSGpUM1c0aVFnb3dWRHA5VGVreHBJUmlqcXQiXSwia2lkIjoidnAtdmVyaWZpZXIta2V5LTIifQ\",\"signature\":\"MEQCICof4ixxMULmwW09IAFbLw1NFTqqkwIObIm8y7XiQHWvAiBMXH2AtOX1SPzunya-YvglGllHDbFeltKDxXQ2MG_eeg\"}]}",
+            "origin": "https://verifier.example"
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "match"
+        },
+        "answer": {
+          "value": {
+            "selections": [
+              {
+                "credential_query_id": "pid-query",
+                "credential_id": "cred-pid-1",
+                "disclosed_claims": [
+                  "[\"given_name\"]"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "consent"
+        },
+        "answer": {
+          "value": {
+            "consented": true
+          }
+        }
+      }
+    },
+    {
+      "host_ask": {
+        "expect": {
+          "kind": "presentation",
+          "inputs": {
+            "origin": "https://verifier.example"
+          }
+        },
+        "answer": {
+          "value": {
+            "vp_token": "vp-token-ms-001"
+          }
+        }
+      }
+    },
+    {
+      "http_out": {
+        "expect": {
+          "method": "POST",
+          "url": "https://verifier.example/*",
+          "purpose": "DirectPost",
+          "must_refuse": true
+        },
+        "reply": {
+          "status": 200,
+          "body": {}
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-vp-dcapi-ms-001",
+            "step": "parsing_request"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-vp-dcapi-ms-001",
+            "step": "request_parsed"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-vp-dcapi-ms-001",
+            "step": "evaluating_verifier_trust"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-vp-dcapi-ms-001",
+            "step": "trust_evaluated"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-vp-dcapi-ms-001",
+            "step": "transaction_data_validated"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-vp-dcapi-ms-001",
+            "step": "credential_selection"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-vp-dcapi-ms-001",
+            "step": "submitting_response"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.progress",
+          "params": {
+            "flow_id": "flow-vp-dcapi-ms-001",
+            "step": "response_returned"
+          }
+        }
+      }
+    },
+    {
+      "wmp_out": {
+        "expect": {
+          "method": "wmp.flow.complete",
+          "params": {
+            "flow_id": "flow-vp-dcapi-ms-001",
+            "result": {
+              "presented": true,
+              "credential_ids": [
+                "cred-pid-1"
+              ],
+              "dc_api_response": {
+                "vp_token": "{\"pid-query\":[\"vp-token-ms-001\"]}"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "notes": "Suite-validated on 2026-11-10: the dc_api module group's multisigned group (oid4vp-1final-wallet-haip-test-plan, sd_jwt_vc / eudi_pid / x509_hash / dc_api.jwt / request_uri_multisigned) green against the engine (plan DVGvjpRfRL20v, suite 5.3.4; the evidence is archived in siros-conformance/results/mini-wallet-vp-dcapi/2026-11-10/ and on the Pages site under runs/mini-wallet-vp-dcapi-2026-11-10). The general JWS is the suite's own verifier key material: signature 1 the client's key/cert, signature 2 the client2 fixture's (both in siros-conformance's vp-wallet-haip-config.json); the client_id is the x509_hash of cert 1's leaf, matching the suite's env. PLACEHOLDER_GENERAL_JWS is substituted at authoring time with the generated artifact (the payload/protected/signature texts embedded verbatim)."
+}
