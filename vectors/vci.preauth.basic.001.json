@@ -140,23 +140,6 @@
    }
   },
   {
-   "http_out": {
-    "expect": {
-     "method": "POST",
-     "url": "https://issuer.example/notification",
-     "purpose": "Notification",
-     "json": {
-      "notification_id": "notif-preauth-basic-001",
-      "event": "credential_accepted"
-     }
-    },
-    "reply": {
-     "status": 200,
-     "body": {}
-    }
-   }
-  },
-  {
    "wmp_out": {
     "expect": {
      "method": "wmp.flow.progress",
